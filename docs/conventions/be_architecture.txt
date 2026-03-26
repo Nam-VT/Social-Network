@@ -1,0 +1,42 @@
+backend/
+├── src/main/java/com/vtn/socail_network
+│   ├── config/                 # Cấu hình hệ thống
+│   │   ├── SecurityConfig.java     # Cấu hình JWT & Phân quyền và Cors Config
+│   │   ├── WebSocketConfig.java    # Cấu hình Real-time Chat
+│   │   ├── ElasticSearchConfig.java# Cấu hình kết nối ES
+│   │   ├
+│   │   └── KafkaConfig.java        # Cấu hình Cache (nếu có)
+│   ├── controller/             # Nơi nhận Request từ Client
+│   │   ├── AuthController.java     # Đăng ký, Đăng nhập
+│   │   ├── UserController.java     # Profile, Friendships
+│   │   ├── PostController.java     # News Feed, Like, Comment
+│   │   ├── ChatController.java     # Message handling
+│   │   └── AdminController.java    # Dashboard quản trị
+│   ├── service/        # (trực tiếp ko cần imp)
+│   │  
+│   ├── repository/             # Truy vấn MySQL (JPA)
+│   │   ├── UserRepository.java
+│   │   ├── PostRepository.java
+│   │   └── FriendshipRepository.java
+│   ├── search/                 # Truy vấn ElasticSearch
+│   │   ├── PostSearchRepository.java
+│   │   └── UserSearchRepository.java
+│   ├
+│   │   ├── entity/                 # Map trực tiếp với Table MySQL
+│   │   ├── enums/                  # Enum
+│   │   ├── dto/                    # Data Transfer Object (Request/Response)
+│   │   │   ├── request/            # Chứa các class Validate đầu vào
+│   │   │   └── response/           # Chứa các class định dạng đầu ra
+│   │                               #(response có 1 format chung trả về, entity sử dụng get set thay vì thư viện)
+│   ├── security/               # Xử lý bảo mật 
+│   │   
+│   │   
+│   ├── exception/              # Xử lý lỗi tập trung
+│   │   ├── GlobalExceptionHandler.java
+│   │   └── CustomException.java
+│   └── util/                   # Các hàm bổ trợ (Date, String, Pagination)
+├── src/main/resources/
+│   ├── application-dev.yaml     # Config môi trường Local
+│   ├── application-prod.yaml    # Config môi trường Deploy
+│   └── banner.txt
+└── pom.xml                     # Quản lý thư viện (Maven)
