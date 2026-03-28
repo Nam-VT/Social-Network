@@ -1,4 +1,4 @@
-package com.vtn.social_network.dto.response;
+package com.vtn.social_network.dto.auth.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class AuthResponse {
     private String token;
+    private String refreshToken;
 
     @Builder.Default
     private String type = "Bearer";

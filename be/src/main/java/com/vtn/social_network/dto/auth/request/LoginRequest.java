@@ -1,4 +1,4 @@
-package com.vtn.social_network.dto.request;
+package com.vtn.social_network.dto.auth.request;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;

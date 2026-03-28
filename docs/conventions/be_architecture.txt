@@ -24,10 +24,11 @@ backend/
 │   ├
 │   │   ├── entity/                 # Map trực tiếp với Table MySQL
 │   │   ├── enums/                  # Enum
-│   │   ├── dto/                    # Data Transfer Object (Request/Response)
-│   │   │   ├── request/            # Chứa các class Validate đầu vào
-│   │   │   └── response/           # Chứa các class định dạng đầu ra
-│   │                               #(response có 1 format chung trả về, entity sử dụng get set thay vì thư viện)
+│   │   ├── dto/                    # Data Transfer Object (Phân nhóm theo Service)
+│   │   ├── auth/               # Các DTO liên quan đến Authentication
+│   │   │   ├── request/        # RegisterRequest, LoginRequest...
+│   │   │   └── response/       # AuthResponse...
+│   │   └── ApiResponse.java    # Format phản hồi chung toàn hệ thống
 │   ├── security/               # Xử lý bảo mật 
 │   │   
 │   │   

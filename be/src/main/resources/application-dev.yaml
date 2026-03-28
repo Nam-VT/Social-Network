@@ -2,7 +2,7 @@ spring:
   datasource:
     url: jdbc:mysql://localhost:3306/social_network?createDatabaseIfNotExist=true
     username: root
-    password: 
+    password: 123456
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
@@ -36,13 +36,26 @@ spring:
       client:
         registration:
           google:
-            client-id: YOUR_GOOGLE_CLIENT_ID
-            client-secret: YOUR_GOOGLE_CLIENT_SECRET
+            client-id: 278614778953-l8o6vhbs6gjbgme9g09lrl7rml5apojs.apps.googleusercontent.com
+            client-secret: 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
             scope:
               - email
               - profile
 
+  # Mail Configuration (Local: log to console, Deploy: use Gmail SMTP)
+  mail:
+    host: localhost
+    port: 1025
+    username: noreply@social-network.local
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+
 # JWT Custom Configuration
 jwt:
   secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
-  expiration: 86400000 # 24 hours
+  expiration: 86400000        # 24 hours (Access Token)
+  refresh-expiration: 604800000  # 7 days (Refresh Token)
