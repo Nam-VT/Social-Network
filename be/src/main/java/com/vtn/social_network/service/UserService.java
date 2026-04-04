@@ -5,6 +5,7 @@ import com.vtn.social_network.dto.user.response.UserProfileResponse;
 import com.vtn.social_network.entity.User;
 import com.vtn.social_network.enums.ErrorCode;
 import com.vtn.social_network.repository.UserRepository;
+import com.vtn.social_network.repository.FriendshipRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -15,12 +16,24 @@ import org.springframework.stereotype.Service;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final FriendshipRepository friendshipRepository;
 
-    public UserProfileResponse getProfile(String username) {
-        User user = userRepository.findByUsername(username)
+    public UserProfileResponse getProfile(String viewerUsername, String targetUsername) {
+        User viewer = userRepository.findByUsername(viewerUsername)
+                .orElseThrow(() -> new RuntimeException(ErrorCode.USER_NOT_FOUND.getMessage()));
+        User target = userRepository.findByUsername(targetUsername)
                 .orElseThrow(() -> new RuntimeException(ErrorCode.USER_NOT_FOUND.getMessage()));
 
-        return toProfileResponse(user);
+        // Kiểm tra block
+        boolean isBlocked = friendshipRepository.findFriendshipBetween(viewer, target)
+                .map(f -> f.getStatus() == com.vtn.social_network.enums.FriendshipStatus.BLOCKED)
+                .orElse(false);
+        if (isBlocked) {
+            throw new RuntimeException(ErrorCode.USER_NOT_FOUND.getMessage()); // Trả về Not Found để ẩn hoàn toàn danh
+                                                                               // tính
+        }
+
+        return toProfileResponse(target);
     }
 
     public UserProfileResponse updateProfile(String currentUsername, UpdateProfileRequest request) {
@@ -53,6 +66,21 @@ public class UserService {
         return toProfileResponse(user);
     }
 
+    public UserProfileResponse updatePrivacy(String currentUsername,
+            com.vtn.social_network.dto.user.request.PrivacyUpdateRequest request) {
+        User user = userRepository.findByUsername(currentUsername)
+                .orElseThrow(() -> new RuntimeException(ErrorCode.USER_NOT_FOUND.getMessage()));
+
+        if (request.getFriendListVisibility() != null) {
+            user.setFriendListVisibility(request.getFriendListVisibility());
+        }
+
+        userRepository.save(user);
+        log.info("Đã cập nhật quyền riêng tư cho user: {}", currentUsername);
+
+        return toProfileResponse(user);
+    }
+
     // ========== Helper ==========
 
     private UserProfileResponse toProfileResponse(User user) {
@@ -68,6 +96,7 @@ public class UserService {
         response.setWebsite(user.getWebsite());
         response.setBirthDate(user.getBirthDate());
         response.setGender(user.getGender());
+        response.setFriendListVisibility(user.getFriendListVisibility());
         response.setCreatedAt(user.getCreatedAt());
         return response;
     }

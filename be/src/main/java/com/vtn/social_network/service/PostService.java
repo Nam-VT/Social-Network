@@ -6,10 +6,13 @@ import com.vtn.social_network.dto.post.response.PostResponse;
 import com.vtn.social_network.entity.Post;
 import com.vtn.social_network.entity.PostMedia;
 import com.vtn.social_network.entity.User;
+import com.vtn.social_network.entity.Friendship;
 import com.vtn.social_network.enums.ErrorCode;
 import com.vtn.social_network.enums.Visibility;
+import com.vtn.social_network.repository.FriendshipRepository;
 import com.vtn.social_network.repository.PostRepository;
 import com.vtn.social_network.repository.UserRepository;
+import com.vtn.social_network.enums.FriendshipStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -28,6 +31,8 @@ public class PostService {
 
     private final PostRepository postRepository;
     private final UserRepository userRepository;
+    private final FriendshipRepository friendshipRepository;
+    private final SearchIndexingService searchIndexingService;
 
     @Transactional
     public PostResponse createPost(String username, CreatePostRequest request) {
@@ -57,14 +62,21 @@ public class PostService {
         }
 
         postRepository.save(post);
+        searchIndexingService.indexPostDirect(post);
         log.info("User {} đã tạo bài viết id={}", username, post.getId());
 
         return toPostResponse(post);
     }
 
-    public PostResponse getPost(Long postId) {
+    public PostResponse getPost(String currentUsername, Long postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException(ErrorCode.POST_NOT_FOUND.getMessage()));
+
+        User currentUser = userRepository.findByUsername(currentUsername)
+                .orElseThrow(() -> new RuntimeException(ErrorCode.USER_NOT_FOUND.getMessage()));
+
+        checkPostVisibility(currentUser, post);
+
         return toPostResponse(post);
     }
 
@@ -85,6 +97,7 @@ public class PostService {
         }
 
         postRepository.save(post);
+        searchIndexingService.indexPostDirect(post);
         log.info("User {} đã cập nhật bài viết id={}", username, postId);
 
         return toPostResponse(post);
@@ -100,39 +113,74 @@ public class PostService {
         }
 
         postRepository.delete(post);
+        searchIndexingService.deletePostDirect(post.getId());
         log.info("User {} đã xóa bài viết id={}", username, postId);
     }
 
     /**
      * Lấy danh sách bài viết của một user.
      */
-    public List<PostResponse> getUserPosts(String username) {
-        User user = userRepository.findByUsername(username)
+    public List<PostResponse> getUserPosts(String currentUsername, String targetUsername) {
+        User targetUser = userRepository.findByUsername(targetUsername)
+                .orElseThrow(() -> new RuntimeException(ErrorCode.USER_NOT_FOUND.getMessage()));
+        User currentUser = userRepository.findByUsername(currentUsername)
                 .orElseThrow(() -> new RuntimeException(ErrorCode.USER_NOT_FOUND.getMessage()));
 
-        return postRepository.findByUserOrderByCreatedAtDesc(user)
+        return postRepository.findByUserOrderByCreatedAtDesc(targetUser)
                 .stream()
+                .filter(post -> isPostVisibleToUser(currentUser, post))
                 .map(this::toPostResponse)
                 .collect(Collectors.toList());
     }
 
     /**
      * News Feed: Cursor-based pagination.
-     * Client gửi timestamp cuối cùng đã thấy để lấy batch tiếp theo.
-     * 🖥️ Local: Trả tất cả bài PUBLIC (chưa lọc theo bạn bè).
-     * 🚀 Deploy: Cần bổ sung lọc theo Friendship + Visibility.
+     * Trả về bài viết của mình, PUBLIC, và FRIENDS (nếu là bạn bè).
      */
-    public List<PostResponse> getNewsFeed(LocalDateTime cursor, int size) {
+    public List<PostResponse> getNewsFeed(String currentUsername, LocalDateTime cursor, int size) {
+        User currentUser = userRepository.findByUsername(currentUsername)
+                .orElseThrow(() -> new RuntimeException(ErrorCode.USER_NOT_FOUND.getMessage()));
+
         LocalDateTime effectiveCursor = (cursor != null) ? cursor : LocalDateTime.now();
 
         return postRepository
-                .findByCreatedAtBeforeOrderByCreatedAtDesc(effectiveCursor, PageRequest.of(0, size))
+                .findNewsFeedForUser(currentUser, currentUser.getId(), effectiveCursor, PageRequest.of(0, size))
                 .stream()
                 .map(this::toPostResponse)
                 .collect(Collectors.toList());
     }
 
     // ========== Helper ==========
+
+    private void checkPostVisibility(User viewer, Post post) {
+        if (!isPostVisibleToUser(viewer, post)) {
+            throw new RuntimeException("Bạn không có quyền xem bài viết này");
+        }
+    }
+
+    private boolean isPostVisibleToUser(User viewer, Post post) {
+        User author = post.getUser();
+        if (author.getId().equals(viewer.getId()))
+            return true;
+
+        if (friendshipRepository.findFriendshipBetween(viewer, author)
+                .map(f -> f.getStatus() == com.vtn.social_network.enums.FriendshipStatus.BLOCKED).orElse(false)) {
+            return false;
+        }
+
+        if (post.getVisibility() == Visibility.PRIVATE)
+            return false;
+        if (post.getVisibility() == Visibility.PUBLIC)
+            return true;
+
+        if (post.getVisibility() == Visibility.FRIENDS) {
+            return friendshipRepository.findFriendshipBetween(viewer, author)
+                    .map(f -> f.getStatus() == com.vtn.social_network.enums.FriendshipStatus.ACCEPTED)
+                    .orElse(false);
+        }
+
+        return false;
+    }
 
     private PostResponse toPostResponse(Post post) {
         PostResponse response = new PostResponse();

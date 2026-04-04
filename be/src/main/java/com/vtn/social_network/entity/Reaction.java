@@ -1,5 +1,7 @@
 package com.vtn.social_network.entity;
 
+import com.vtn.social_network.enums.ReactionType;
+import com.vtn.social_network.enums.TargetType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -7,27 +9,31 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "story_views")
+@Table(name = "reactions")
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class StoryView {
+public class Reaction {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "story_id")
-    private Story story;
-
-    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    private User viewer;
+    private User user;
+
+    @Column(nullable = false)
+    private Long targetId;
 
     @Enumerated(EnumType.STRING)
-    private com.vtn.social_network.enums.ReactionType reactionType;
+    @Column(nullable = false)
+    private TargetType targetType;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ReactionType reactionType;
 
     @CreationTimestamp
-    private LocalDateTime viewedAt;
+    private LocalDateTime createdAt;
 }

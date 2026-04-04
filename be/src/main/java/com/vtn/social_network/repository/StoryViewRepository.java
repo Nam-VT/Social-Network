@@ -13,4 +13,6 @@ public interface StoryViewRepository extends JpaRepository<StoryView, Long> {
     List<StoryView> findByStoryOrderByViewedAtDesc(Story story);
 
     boolean existsByStoryAndViewer(Story story, User viewer);
+
+    java.util.Optional<StoryView> findByStoryAndViewer(Story story, User viewer);
 }

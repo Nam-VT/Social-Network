@@ -45,6 +45,16 @@ public class User {
     @Builder.Default
     private UserStatus status = UserStatus.ACTIVE;
 
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private com.vtn.social_network.enums.Visibility friendListVisibility = com.vtn.social_network.enums.Visibility.PUBLIC;
+
+    /** true = ai cũng có thể follow (tài khoản công khai - default) */
+    /** false = chỉ bạn bè mới auto-follow (tài khoản riêng tư) */
+    @Builder.Default
+    @Column(nullable = false)
+    private boolean allowPublicFollowers = true;
+
     @CreationTimestamp
     private LocalDateTime createdAt;
 

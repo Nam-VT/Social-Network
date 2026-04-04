@@ -25,6 +25,8 @@ public class ChatRoom {
 
     private String avatarUrl;
 
+    private LocalDateTime lastMessageAt;
+
     @CreationTimestamp
     private LocalDateTime createdAt;
 }

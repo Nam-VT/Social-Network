@@ -7,27 +7,27 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "story_views")
+@Table(name = "chat_members")
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class StoryView {
+public class Member {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "story_id")
-    private Story story;
+    @JoinColumn(name = "user_id")
+    private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User viewer;
+    @JoinColumn(name = "chat_room_id")
+    private ChatRoom chatRoom;
 
-    @Enumerated(EnumType.STRING)
-    private com.vtn.social_network.enums.ReactionType reactionType;
+    @Builder.Default
+    private Integer unreadCount = 0;
 
     @CreationTimestamp
-    private LocalDateTime viewedAt;
+    private LocalDateTime joinedAt;
 }

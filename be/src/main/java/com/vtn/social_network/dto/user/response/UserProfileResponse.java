@@ -25,5 +25,6 @@ public class UserProfileResponse {
     private String website;
     private LocalDate birthDate;
     private Gender gender;
+    private com.vtn.social_network.enums.Visibility friendListVisibility;
     private LocalDateTime createdAt;
 }
