@@ -47,11 +47,10 @@ public class RateLimitFilter extends OncePerRequestFilter {
     private static final Duration WINDOW = Duration.ofMinutes(1);
 
     public RateLimitFilter(
-            @Value("${spring.data.redis.host:localhost}") String redisHost,
-            @Value("${spring.data.redis.port:6379}") int redisPort,
+            @Value("${spring.data.redis.url:redis://localhost:6379}") String redisUrl,
             ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
-        RedisClient redisClient = RedisClient.create("redis://" + redisHost + ":" + redisPort);
+        RedisClient redisClient = RedisClient.create(redisUrl);
         StatefulRedisConnection<String, byte[]> connection =
                 redisClient.connect(RedisCodec.of(StringCodec.UTF8, ByteArrayCodec.INSTANCE));
         this.proxyManager = LettuceBasedProxyManager.builderFor(connection)
