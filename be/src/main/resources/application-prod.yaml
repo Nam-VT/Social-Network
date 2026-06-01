@@ -16,19 +16,28 @@ spring:
       max-file-size: 50MB
       max-request-size: 100MB
 
-  # Kafka Configuration (Tắt hoặc cấu hình sau nếu có dùng thật trên Cloud)
+  # Kafka Configuration (Sử dụng Cloud Kafka như Upstash)
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: ${KAFKA_URL}
+    properties:
+      security.protocol: SASL_SSL
+      sasl.mechanism: SCRAM-SHA-256
+      sasl.jaas.config: org.apache.kafka.common.security.scram.ScramLoginModule required username="${KAFKA_USERNAME}" password="${KAFKA_PASSWORD}";
+      spring.json.trusted.packages: "*"
     consumer:
       group-id: social-network-group
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-      properties:
-        spring.json.trusted.packages: "*"
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+  # Elasticsearch Configuration (Sử dụng Cloud Elasticsearch)
+  elasticsearch:
+    uris: ${ELASTICSEARCH_URL}
+    username: ${ELASTICSEARCH_USERNAME}
+    password: ${ELASTICSEARCH_PASSWORD}
 
   # Redis Configuration (Sẽ cấu hình bằng Biến môi trường trên Render)
   data:
