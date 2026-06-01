@@ -6,5 +6,5 @@ import java.util.List;
 
 public interface PostSearchRepository extends ElasticsearchRepository<PostDocument, Long> {
 
-    List<PostDocument> findByContentContaining(String content);
+    List<PostDocument> findByContentMatches(String content);
 }

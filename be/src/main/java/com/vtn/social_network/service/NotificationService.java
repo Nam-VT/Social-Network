@@ -8,14 +8,15 @@ import com.vtn.social_network.enums.TargetType;
 import com.vtn.social_network.repository.NotificationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -47,7 +48,9 @@ public class NotificationService {
         // Nhóm 2: Gộp theo đối tượng Target (bài viết / comment cụ thể)
         else if (type == NotificationType.LIKE_POST
                 || type == NotificationType.LIKE_COMMENT
-                || type == NotificationType.COMMENT) {
+                || type == NotificationType.COMMENT
+                || type == NotificationType.STORY_REACT
+                || type == NotificationType.STORY_REPLY) {
             existingOpt = notificationRepository
                     .findByRecipientAndActorAndTypeAndTargetIdAndTargetTypeAndIsReadFalse(
                             recipient, actor, type, targetId, targetType);
@@ -60,16 +63,17 @@ public class NotificationService {
                     existing.setDeepLink(deepLink);
                     notificationRepository.save(existing);
                     pushToWebSocket(existing);
+                    pushUnreadCountToWebSocket(recipient);
                     log.info("GỘP thông báo {} từ {} → {}", type, actor.getUsername(), recipient.getUsername());
                 },
                 () -> createAndPush(recipient, actor, type, targetId, targetType, deepLink));
     }
 
-    public List<NotificationResponse> getMyNotifications(User user) {
-        return notificationRepository.findByRecipientOrderByCreatedAtDesc(user)
-                .stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
+    public Page<NotificationResponse> getMyNotifications(User user, int page,
+            int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return notificationRepository.findByRecipientOrderByCreatedAtDesc(user, pageable)
+                .map(this::toResponse);
     }
 
     @Transactional
@@ -77,7 +81,18 @@ public class NotificationService {
         notificationRepository.findById(notificationId).ifPresent(n -> {
             n.setRead(true);
             notificationRepository.save(n);
+            pushUnreadCountToWebSocket(n.getRecipient());
         });
+    }
+
+    @Transactional
+    public void markAllAsRead(User user) {
+        notificationRepository.markAllAsReadByRecipient(user);
+        pushUnreadCountToWebSocket(user);
+    }
+
+    public long getUnreadCount(User user) {
+        return notificationRepository.countByRecipientAndIsReadFalse(user);
     }
 
     // ========== Private Helpers ==========
@@ -94,6 +109,7 @@ public class NotificationService {
                 .build();
         notificationRepository.save(notification);
         pushToWebSocket(notification);
+        pushUnreadCountToWebSocket(recipient);
         log.info("TẠO MỚI thông báo {} → {}", type, recipient.getUsername());
     }
 
@@ -103,6 +119,14 @@ public class NotificationService {
                 notification.getRecipient().getUsername(),
                 "/queue/notifications",
                 toResponse(notification));
+    }
+
+    private void pushUnreadCountToWebSocket(User user) {
+        long count = notificationRepository.countByRecipientAndIsReadFalse(user);
+        messagingTemplate.convertAndSendToUser(
+                user.getUsername(),
+                "/queue/unread-notifications",
+                count);
     }
 
     private NotificationResponse toResponse(Notification n) {

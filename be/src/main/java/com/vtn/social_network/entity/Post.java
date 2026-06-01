@@ -1,5 +1,6 @@
 package com.vtn.social_network.entity;
 
+import com.vtn.social_network.enums.GroupPostStatus;
 import com.vtn.social_network.enums.Visibility;
 import jakarta.persistence.*;
 import lombok.*;
@@ -34,6 +35,19 @@ public class Post {
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<PostMedia> mediaList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<PostHashtag> hashtags = new ArrayList<>();
+
+    // Bài viết thuộc nhóm nào (null = bài cá nhân)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "group_id")
+    private SocialGroup group;
+
+    // Trạng thái duyệt bài trong nhóm
+    @Enumerated(EnumType.STRING)
+    private GroupPostStatus groupPostStatus;
 
     @CreationTimestamp
     private LocalDateTime createdAt;

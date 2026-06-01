@@ -1,0 +1,34 @@
+@reference "tailwindcss";
+
+.create-post-wrapper {
+  @apply bg-[var(--color-bg-secondary)] rounded-xl shadow-sm border p-4 mb-4;
+  border-color: var(--color-border-light);
+}
+
+.create-post-top {
+  @apply flex items-center gap-3 mb-3;
+}
+
+.create-post-avatar {
+  @apply w-10 h-10 rounded-full object-cover border;
+  border-color: var(--color-border-light);
+}
+
+.create-post-input {
+  @apply flex-1 bg-[var(--color-bg-tertiary)] hover:bg-[var(--color-bg-hover)] transition-colors rounded-full px-4 py-2.5 text-left text-sm cursor-pointer outline-none;
+  color: var(--color-text-secondary);
+}
+
+.create-post-divider {
+  @apply border-t my-3;
+  border-color: var(--color-border-light);
+}
+
+.create-post-actions {
+  @apply flex items-center justify-between;
+}
+
+.create-post-btn {
+  @apply flex-1 flex items-center justify-center gap-2 py-2 rounded-lg hover:bg-[var(--color-bg-hover)] transition-colors cursor-pointer text-sm font-medium;
+  color: var(--color-text-secondary);
+}

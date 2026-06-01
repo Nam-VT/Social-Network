@@ -12,4 +12,5 @@ public class SendMessageRequest {
     private String content;
     private String mediaUrl;
     private MediaType mediaType;
+    private Long replyToMessageId;
 }

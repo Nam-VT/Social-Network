@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # ===== MySQL =====
   # mysql:
@@ -13,6 +11,7 @@ services:
   #     MYSQL_DATABASE: social_network
   #   volumes:
   #     - mysql_data:/var/lib/mysql
+
   #   command: --default-authentication-plugin=caching_sha2_password
 
   # ===== Zookeeper (required by Kafka) =====
@@ -44,7 +43,7 @@ services:
 
   # ===== Elasticsearch =====
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.12.0
+    image: docker.elastic.co/elasticsearch/elasticsearch:9.0.1
     container_name: social-network-elasticsearch
     restart: unless-stopped
     ports:
@@ -66,6 +65,18 @@ services:
       - "1025:1025" # SMTP
       - "8025:8025" # Web UI (xem email tai http://localhost:8025)
 
+  # ===== Redis (Cache + Rate Limiting) =====
+  redis:
+    image: redis:7.2-alpine
+    container_name: social-network-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --save 60 1 --loglevel warning
+
 volumes:
   mysql_data:
   es_data:
+  redis_data:

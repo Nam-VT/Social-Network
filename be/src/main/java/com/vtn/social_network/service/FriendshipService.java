@@ -1,6 +1,7 @@
 package com.vtn.social_network.service;
 
 import com.vtn.social_network.dto.user.response.FriendResponse;
+import com.vtn.social_network.entity.ChatRoom;
 import com.vtn.social_network.entity.Friendship;
 import com.vtn.social_network.entity.User;
 import com.vtn.social_network.enums.ErrorCode;
@@ -9,10 +10,14 @@ import com.vtn.social_network.enums.NotificationType;
 import com.vtn.social_network.enums.TargetType;
 import com.vtn.social_network.enums.Visibility;
 import com.vtn.social_network.repository.FriendshipRepository;
+import com.vtn.social_network.repository.MemberRepository;
 import com.vtn.social_network.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,16 +33,19 @@ public class FriendshipService {
     private final UserRepository userRepository;
     private final NotificationService notificationService;
     private final FollowService followService;
+    private final MemberRepository memberRepository;
 
     @Autowired
     public FriendshipService(FriendshipRepository friendshipRepository,
             UserRepository userRepository,
             NotificationService notificationService,
-            @Lazy FollowService followService) {
+            @Lazy FollowService followService,
+            MemberRepository memberRepository) {
         this.friendshipRepository = friendshipRepository;
         this.userRepository = userRepository;
         this.notificationService = notificationService;
         this.followService = followService;
+        this.memberRepository = memberRepository;
     }
 
     @Transactional
@@ -151,7 +159,36 @@ public class FriendshipService {
                 .collect(Collectors.toList());
     }
 
-    public List<FriendResponse> getFriendsList(String requesterUsername, String targetUsername) {
+    /** Lấy danh sách lời mời kết bạn mà current user đã GỌi đi và chưa được trả lời. */
+    public List<FriendResponse> getSentRequests(String currentUsername) {
+        User currentUser = getUserByUsername(currentUsername);
+        List<Friendship> sent = friendshipRepository.findByRequesterAndStatus(currentUser,
+                FriendshipStatus.PENDING);
+        return sent.stream()
+                .map(f -> toFriendResponse(f.getAddressee()))
+                .collect(Collectors.toList());
+    }
+
+    /** Người GỌi có thể HỦY lời mời mà họ đã gửi (khác với reject là người nhận mới reject được). */
+    @Transactional
+    public void cancelFriendRequest(String cancelerUsername, Long targetUserId) {
+        User canceler = getUserByUsername(cancelerUsername);
+        User target = getUserById(targetUserId);
+
+        Friendship friendship = friendshipRepository.findFriendshipBetween(canceler, target)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy lời mời kết bạn"));
+
+        if (!friendship.getRequester().getId().equals(canceler.getId())
+                || friendship.getStatus() != FriendshipStatus.PENDING) {
+            throw new RuntimeException("Không thể hủy lời mời kết bạn này");
+        }
+
+        friendshipRepository.delete(friendship);
+        log.info("User {} đã hủy lời mời kết bạn gửi cho User ID {}", cancelerUsername, targetUserId);
+    }
+
+    public Page<FriendResponse> getFriendsList(String requesterUsername,
+            String targetUsername, int page, int size) {
         User requester = getUserByUsername(requesterUsername);
         User targetUser = getUserByUsername(targetUsername);
 
@@ -170,14 +207,28 @@ public class FriendshipService {
             }
         }
 
-        List<Friendship> acceptedFriendships = friendshipRepository.findFriendsByUserAndStatus(targetUser,
-                FriendshipStatus.ACCEPTED);
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Friendship> acceptedFriendships = friendshipRepository
+                .findFriendsByUserAndStatus(targetUser,
+                        FriendshipStatus.ACCEPTED, pageable);
 
-        return acceptedFriendships.stream()
-                .map(f -> {
-                    // Extract the other user from the friendship
-                    return f.getRequester().getId().equals(targetUser.getId()) ? f.getAddressee() : f.getRequester();
-                })
+        return acceptedFriendships.map(f -> {
+            // Extract the other user from the friendship
+            User friend = f.getRequester().getId().equals(targetUser.getId()) ? f.getAddressee() : f.getRequester();
+            return toFriendResponse(friend);
+        });
+    }
+
+    public List<FriendResponse> getMutualFriends(String currentUsername, String targetUsername, int limit) {
+        User currentUser = getUserByUsername(currentUsername);
+        User targetUser = getUserByUsername(targetUsername);
+
+        if (currentUser.getId().equals(targetUser.getId())) {
+            return List.of();
+        }
+
+        List<User> mutualFriends = friendshipRepository.findMutualFriends(currentUser, targetUser, PageRequest.of(0, limit));
+        return mutualFriends.stream()
                 .map(this::toFriendResponse)
                 .collect(Collectors.toList());
     }
@@ -221,6 +272,18 @@ public class FriendshipService {
         friendshipRepository.save(blockedRelation);
         // Xóa follow 2 chiều khi Block
         followService.removeFollowBothWays(currentUser, targetUser);
+
+        // Cảnh báo nếu có nhóm chat chung
+        List<ChatRoom> sharedGroups = memberRepository.findSharedGroupRooms(currentUser, targetUser);
+        for (ChatRoom group : sharedGroups) {
+            notificationService.sendNotification(
+                    currentUser, targetUser, NotificationType.BLOCK_SHARED_GROUP,
+                    group.getId(), TargetType.POST,
+                    "/chat/rooms/" + group.getId());
+            log.info("Cảnh báo: User {} và User {} đang ở chung nhóm '{}'",
+                    currentUsername, targetUserId, group.getRoomName());
+        }
+
         log.info("User {} đã chặn User ID {}", currentUsername, targetUserId);
     }
 

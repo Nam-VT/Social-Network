@@ -14,6 +14,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -26,6 +29,7 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final EmailService emailService;
 
+    @Transactional
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByUsername(request.getUsername())) {
             throw new RuntimeException(ErrorCode.USERNAME_ALREADY_EXISTS.getMessage());
@@ -39,24 +43,71 @@ public class AuthService {
                 .password(passwordEncoder.encode(request.getPassword()))
                 .email(request.getEmail())
                 .fullName(request.getFullName())
+                .emailVerified(false)
+                .verificationToken(UUID.randomUUID().toString())
                 .build();
 
         userRepository.save(user);
         log.info("Đã tạo tài khoản mới: {}", user.getUsername());
 
-        return buildAuthResponse(user);
+        // Gửi email xác thực
+        emailService.sendVerificationEmail(user.getEmail(), user.getVerificationToken());
+
+        // Không trả về token đăng nhập ngay vì chưa xác thực email
+        AuthResponse.UserDto userDto = AuthResponse.UserDto.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .fullName(user.getFullName())
+                .avatarUrl(user.getAvatarUrl())
+                .build();
+
+        AuthResponse response = new AuthResponse();
+        response.setUser(userDto);
+        response.setToken(null);
+        response.setRefreshToken(null);
+        return response;
+    }
+
+    @Transactional
+    public void verifyEmail(String token) {
+        User user = userRepository.findByVerificationToken(token)
+                .orElseThrow(() -> new RuntimeException("Mã xác thực không hợp lệ hoặc đã hết hạn"));
+
+        user.setEmailVerified(true);
+        user.setVerificationToken(null);
+        userRepository.save(user);
+        log.info("User {} đã xác thực email thành công", user.getUsername());
+    }
+
+    @Transactional
+    public void resendVerification(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException(ErrorCode.USER_NOT_FOUND.getMessage()));
+
+        if (user.isEmailVerified()) {
+            throw new RuntimeException("Tài khoản này đã được xác thực");
+        }
+
+        user.setVerificationToken(UUID.randomUUID().toString());
+        userRepository.save(user);
+
+        emailService.sendVerificationEmail(user.getEmail(), user.getVerificationToken());
+        log.info("Đã gửi lại email xác thực cho: {}", email);
     }
 
     public AuthResponse login(LoginRequest request) {
+        User user = userRepository.findByUsername(request.getUsername())
+                .orElseThrow(() -> new RuntimeException(ErrorCode.USER_NOT_FOUND.getMessage()));
+
+        // Removed Email Verification check to allow unverified login
+
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
         } catch (BadCredentialsException e) {
             throw new BadCredentialsException(ErrorCode.BAD_CREDENTIALS.getMessage());
         }
-
-        User user = userRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new RuntimeException(ErrorCode.USER_NOT_FOUND.getMessage()));
 
         return buildAuthResponse(user);
     }
@@ -71,6 +122,8 @@ public class AuthService {
         String username = jwtUtils.extractUsername(refreshToken);
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException(ErrorCode.USER_NOT_FOUND.getMessage()));
+
+        // Removed Email Verification check to allow unverified login
 
         return buildAuthResponse(user);
     }
@@ -114,6 +167,7 @@ public class AuthService {
     /**
      * Xử lý đăng nhập/đăng ký qua Google OAuth2.
      */
+    @Transactional
     public AuthResponse processOAuth2Login(OAuth2User oAuth2User) {
         String email = oAuth2User.getAttribute("email");
         String name = oAuth2User.getAttribute("name");
@@ -127,6 +181,7 @@ public class AuthService {
                             .email(email)
                             .fullName(name)
                             .avatarUrl(picture)
+                            .emailVerified(true) // Google mặc định đã verify
                             .build();
 
                     if (userRepository.existsByUsername(newUser.getUsername())) {
@@ -147,12 +202,19 @@ public class AuthService {
         String token = jwtUtils.generateToken(user.getUsername());
         String refreshToken = jwtUtils.generateRefreshToken(user.getUsername());
 
+        AuthResponse.UserDto userDto = AuthResponse.UserDto.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .fullName(user.getFullName())
+                .avatarUrl(user.getAvatarUrl())
+                .build();
+
         AuthResponse response = new AuthResponse();
         response.setToken(token);
         response.setRefreshToken(refreshToken);
         response.setType("Bearer");
-        response.setUsername(user.getUsername());
-        response.setEmail(user.getEmail());
+        response.setUser(userDto);
         return response;
     }
 }

@@ -1,0 +1,103 @@
+@reference "tailwindcss";
+
+.post-wrapper {
+  @apply bg-[var(--color-bg-secondary)] rounded-xl shadow-sm border mb-4;
+  border-color: var(--color-border-light);
+}
+
+/* Header */
+.post-header {
+  @apply flex items-center justify-between p-4;
+}
+
+.post-author-info {
+  @apply flex items-center gap-3;
+}
+
+.post-avatar {
+  @apply w-10 h-10 rounded-full object-cover border;
+  border-color: var(--color-border-light);
+}
+
+.post-author-name {
+  @apply font-semibold text-[15px];
+  color: var(--color-text-primary);
+}
+
+.post-time {
+  @apply text-xs flex items-center gap-1;
+  color: var(--color-text-tertiary);
+}
+
+.post-options-btn {
+  @apply p-2 rounded-full hover:bg-[var(--color-bg-hover)] transition-colors;
+  color: var(--color-text-secondary);
+}
+
+/* Content */
+.post-content-text {
+  @apply px-4 pb-3 text-[15px] whitespace-pre-wrap;
+  color: var(--color-text-primary);
+}
+
+.post-content-image {
+  @apply w-full max-h-[600px] object-cover border-y;
+  border-color: var(--color-border-light);
+}
+
+/* Stats (Likes/Comments count) */
+.post-stats {
+  @apply flex items-center justify-between px-4 py-2 text-sm;
+  color: var(--color-text-secondary);
+}
+
+.post-stats-likes {
+  @apply flex items-center gap-1.5;
+}
+
+/* Actions (Like, Comment, Share) */
+.post-actions {
+  @apply flex items-center justify-between px-2 py-1 border-y mx-4 mb-2;
+  border-color: var(--color-border-light);
+}
+
+.post-action-btn {
+  @apply flex-1 flex items-center justify-center gap-2 py-2 my-1 rounded-lg hover:bg-[var(--color-bg-hover)] transition-colors font-medium text-sm;
+  color: var(--color-text-secondary);
+}
+
+.post-action-btn.liked {
+  color: var(--color-accent);
+}
+
+/* Reaction Popover */
+.post-reaction-container {
+  @apply relative;
+}
+
+.reaction-popover {
+  @apply absolute bottom-full left-0 mb-2 bg-[var(--color-bg-secondary)] border border-[var(--color-border-light)] shadow-lg rounded-full flex items-center gap-1 px-2 py-1 opacity-0 pointer-events-none transition-all duration-200 translate-y-2;
+  z-index: 50;
+}
+
+/* Cầu nối tàng hình để giữ hover khi chuột đi qua khoảng trống mb-2 */
+.reaction-popover::after {
+  content: '';
+  @apply absolute left-0 right-0 h-4 bg-transparent -bottom-4;
+}
+
+.post-reaction-container:hover .reaction-popover {
+  @apply opacity-100 pointer-events-auto translate-y-0 delay-300;
+}
+
+.reaction-icon-btn {
+  @apply text-2xl hover:scale-125 transition-transform origin-bottom cursor-pointer p-1;
+}
+
+/* Specific colors for active reactions */
+.reaction-text.LIKE { color: var(--color-accent); }
+.reaction-text.LOVE { color: #f02849; }
+.reaction-text.HAHA { color: #f7b125; }
+.reaction-text.WOW { color: #f7b125; }
+.reaction-text.SAD { color: #f7b125; }
+.reaction-text.ANGRY { color: #e9710f; }

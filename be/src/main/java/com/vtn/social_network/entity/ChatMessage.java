@@ -34,6 +34,17 @@ public class ChatMessage {
     @Enumerated(EnumType.STRING)
     private MediaType mediaType;
 
+    @Builder.Default
+    private boolean isEdited = false;
+
+    @Builder.Default
+    private boolean isRecalled = false;
+
+    @Builder.Default
+    private boolean isPinned = false;
+
+    private Long replyToMessageId;
+
     @CreationTimestamp
     private LocalDateTime createdAt;
 }

@@ -49,4 +49,33 @@ public class EmailService {
             log.warn("Không thể gửi email (SMTP chưa cấu hình?): {}. Link đã được log ở trên.", e.getMessage());
         }
     }
+
+    /**
+     * Gửi email xác thực tài khoản.
+     */
+    public void sendVerificationEmail(String toEmail, String verificationToken) {
+        String verificationLink = "http://localhost:3000/verify-email?token=" + verificationToken;
+
+        log.info("========== VERIFY EMAIL ==========");
+        log.info("To: {}", toEmail);
+        log.info("Link: {}", verificationLink);
+        log.info("==================================");
+
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(fromEmail);
+            message.setTo(toEmail);
+            message.setSubject("Social Network - Xác thực tài khoản");
+            message.setText("Xin chào,\n\n"
+                    + "Cảm ơn bạn đã đăng ký tài khoản tại Social Network.\n"
+                    + "Nhấn vào link bên dưới để xác thực địa chỉ email của bạn:\n\n"
+                    + verificationLink + "\n\n"
+                    + "Nếu bạn không đăng ký, hãy bỏ qua email này.\n\n"
+                    + "Trân trọng,\nSocial Network Team");
+            mailSender.send(message);
+            log.info("Email xác thực đã được gửi tới: {}", toEmail);
+        } catch (Exception e) {
+            log.warn("Không thể gửi email xác thực: {}. Link đã log ở trên.", e.getMessage());
+        }
+    }
 }

@@ -12,6 +12,12 @@ spring:
       hibernate:
         format_sql: true
 
+  # File Upload Config
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 100MB
+
   # Kafka Configuration
   kafka:
     bootstrap-servers: localhost:9092
@@ -29,6 +35,17 @@ spring:
   # ElasticSearch Configuration
   elasticsearch:
     uris: http://localhost:9200
+
+  # Redis Configuration (Cache + Rate Limiting)
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 4
 
   # OAuth2 Configuration (Google)
   security:
@@ -59,3 +76,10 @@ jwt:
   secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
   expiration: 86400000        # 24 hours (Access Token)
   refresh-expiration: 604800000  # 7 days (Refresh Token)
+
+# Cloudinary Configuration
+cloudinary:
+  cloud-name: dyf7xxq0j
+  api-key: 325935644393225
+  api-secret: mUluYROQQbk-T4vuoqYxRXy1zcI
+

@@ -1,7 +1,7 @@
 package com.vtn.social_network.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import com.vtn.social_network.entity.Post;
 import com.vtn.social_network.entity.User;
 import com.vtn.social_network.repository.PostRepository;
@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -72,7 +73,9 @@ public class SearchIndexingService {
                 .authorUsername(post.getUser().getUsername())
                 .authorFullName(post.getUser().getFullName())
                 .visibility(post.getVisibility().name())
-                .createdAt(post.getCreatedAt())
+                .createdAt(post.getCreatedAt() != null
+                        ? post.getCreatedAt().atZone(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli()
+                        : null)
                 .build();
         postSearchRepository.save(doc);
         log.info("Đã index Post {} vào ES", post.getId());
@@ -81,6 +84,18 @@ public class SearchIndexingService {
     public void deletePostDirect(Long postId) {
         postSearchRepository.deleteById(postId);
         log.info("Đã xóa Post {} khỏi ES", postId);
+    }
+
+    public void syncAllPostsToES() {
+        List<Post> allPosts = postRepository.findAll();
+        for (Post post : allPosts) {
+            try {
+                indexPostDirect(post);
+            } catch (Exception e) {
+                log.error("Lỗi khi sync post {}: {}", post.getId(), e.getMessage());
+            }
+        }
+        log.info("Đã đồng bộ {} posts sang ES", allPosts.size());
     }
 
     // ========== Private Kafka Handlers ==========

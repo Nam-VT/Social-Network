@@ -1,0 +1,40 @@
+/* ─── Profile Page ─────────────────────────────────────────────────────── */
+
+/* Hide scrollbar for tab strip */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Cover photo shimmer while uploading */
+@keyframes cover-shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+.cover-shimmer {
+  background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+  background-size: 800px 100%;
+  animation: cover-shimmer 1.5s infinite;
+}
+
+/* Photo grid hover zoom */
+.photo-grid-item img {
+  transition: transform 0.3s ease;
+}
+.photo-grid-item:hover img {
+  transform: scale(1.08);
+}
+
+/* Friend card */
+.friend-card {
+  border-radius: 12px;
+  overflow: hidden;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+.friend-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}

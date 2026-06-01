@@ -4,6 +4,7 @@ import com.vtn.social_network.dto.user.response.FriendResponse;
 import com.vtn.social_network.entity.Follow;
 import com.vtn.social_network.entity.User;
 import com.vtn.social_network.enums.ErrorCode;
+import com.vtn.social_network.enums.FriendshipStatus;
 import com.vtn.social_network.enums.NotificationType;
 import com.vtn.social_network.enums.TargetType;
 import com.vtn.social_network.repository.FollowRepository;
@@ -11,11 +12,11 @@ import com.vtn.social_network.repository.FriendshipRepository;
 import com.vtn.social_network.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -45,7 +46,7 @@ public class FollowService {
 
         // Kiểm tra bị block (cả 2 chiều)
         boolean isBlocked = friendshipRepository.findFriendshipBetween(follower, following)
-                .map(f -> f.getStatus() == com.vtn.social_network.enums.FriendshipStatus.BLOCKED)
+                .map(f -> f.getStatus() == FriendshipStatus.BLOCKED)
                 .orElse(false);
         if (isBlocked) {
             throw new RuntimeException("Không thể theo dõi người dùng này");
@@ -91,23 +92,21 @@ public class FollowService {
     /**
      * Danh sách Followers của một user (những ai đang theo dõi user đó).
      */
-    public List<FriendResponse> getFollowers(Long userId) {
+    public Page<FriendResponse> getFollowers(Long userId, int page, int size) {
         User user = getUserById(userId);
-        return followRepository.findByFollowing(user)
-                .stream()
-                .map(f -> toResponse(f.getFollower()))
-                .collect(Collectors.toList());
+        Pageable pageable = PageRequest.of(page, size);
+        return followRepository.findByFollowing(user, pageable)
+                .map(f -> toResponse(f.getFollower()));
     }
 
     /**
      * Danh sách Following của một user (user đó đang theo dõi ai).
      */
-    public List<FriendResponse> getFollowing(Long userId) {
+    public Page<FriendResponse> getFollowing(Long userId, int page, int size) {
         User user = getUserById(userId);
-        return followRepository.findByFollower(user)
-                .stream()
-                .map(f -> toResponse(f.getFollowing()))
-                .collect(Collectors.toList());
+        Pageable pageable = PageRequest.of(page, size);
+        return followRepository.findByFollower(user, pageable)
+                .map(f -> toResponse(f.getFollowing()));
     }
 
     /**

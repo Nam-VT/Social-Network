@@ -10,4 +10,6 @@ import java.util.List;
 @Repository
 public interface PostMediaRepository extends JpaRepository<PostMedia, Long> {
     List<PostMedia> findByPostOrderByPositionAsc(Post post);
+
+    List<PostMedia> findByPostIdInOrderByPositionAsc(List<Long> postIds);
 }

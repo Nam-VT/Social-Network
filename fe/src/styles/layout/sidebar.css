@@ -1,0 +1,46 @@
+@reference "tailwindcss";
+
+.sidebar-wrapper {
+  @apply h-full flex flex-col gap-2;
+}
+
+.sidebar-menu-item {
+  @apply flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-colors;
+  color: var(--color-text-primary);
+}
+
+.sidebar-menu-item:hover {
+  background-color: var(--color-bg-hover);
+}
+
+.sidebar-menu-item.active {
+  background-color: var(--color-accent-light);
+  color: var(--color-accent);
+}
+
+.sidebar-menu-item.active .sidebar-icon {
+  color: var(--color-accent);
+}
+
+.sidebar-icon {
+  @apply w-6 h-6;
+  color: var(--color-text-secondary);
+}
+
+.sidebar-divider {
+  @apply my-2 border-t;
+  border-color: var(--color-border-light);
+}
+
+.sidebar-footer {
+  @apply mt-auto pt-4 text-xs;
+  color: var(--color-text-tertiary);
+}
+
+.sidebar-footer-links {
+  @apply flex flex-wrap gap-x-3 gap-y-1 mt-2;
+}
+
+.sidebar-footer-links a:hover {
+  text-decoration: underline;
+}

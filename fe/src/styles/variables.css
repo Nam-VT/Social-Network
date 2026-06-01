@@ -1,0 +1,52 @@
+/* ========================================
+   DESIGN TOKENS - Hệ thống Biến CSS
+   ======================================== */
+
+:root {
+  /* Màu nền */
+  --color-bg-primary: #f0f2f5;
+  --color-bg-secondary: #ffffff;
+  --color-bg-tertiary: #e4e6eb;
+  --color-bg-hover: #f2f2f2;
+
+  /* Màu chữ */
+  --color-text-primary: #050505;
+  --color-text-secondary: #65676b;
+  --color-text-tertiary: #8a8d91;
+
+  /* Màu nhấn (Brand) */
+  --color-accent: #1877f2;
+  --color-accent-hover: #166fe5;
+  --color-accent-light: #e7f3ff;
+
+  /* Màu viền */
+  --color-border: #ced0d4;
+  --color-border-light: #e4e6eb;
+
+  /* Màu trạng thái */
+  --color-success: #42b72a;
+  --color-danger: #fa3e3e;
+  --color-warning: #f7b928;
+
+  /* Transition */
+  --transition-normal: 250ms ease;
+}
+
+/* Dark Mode */
+.dark {
+  --color-bg-primary: #18191a;
+  --color-bg-secondary: #242526;
+  --color-bg-tertiary: #3a3b3c;
+  --color-bg-hover: #3a3b3c;
+
+  --color-text-primary: #e4e6eb;
+  --color-text-secondary: #b0b3b8;
+  --color-text-tertiary: #8a8d91;
+
+  --color-accent: #2d88ff;
+  --color-accent-hover: #1a7aef;
+  --color-accent-light: #263c5a;
+
+  --color-border: #3e4042;
+  --color-border-light: #3a3b3c;
+}

@@ -1,6 +1,7 @@
 package com.vtn.social_network.dto.user.request;
 
 import com.vtn.social_network.enums.Gender;
+import com.vtn.social_network.enums.RelationshipStatus;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -28,4 +29,6 @@ public class UpdateProfileRequest {
     private LocalDate birthDate;
 
     private Gender gender;
+
+    private RelationshipStatus relationshipStatus;
 }

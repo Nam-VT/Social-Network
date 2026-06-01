@@ -1,0 +1,79 @@
+@reference "tailwindcss";
+
+.app-layout-wrapper {
+  @apply min-h-screen flex flex-col;
+  background-color: var(--color-bg-primary);
+}
+
+.app-layout-main {
+  @apply flex-1 max-w-[1600px] w-full mx-auto flex relative;
+}
+
+.app-layout-main.chat-mode {
+  @apply max-w-none mx-0 h-[calc(100vh-64px)] overflow-hidden;
+}
+
+.app-layout-sidebar {
+  @apply hidden lg:block w-[300px] shrink-0 sticky top-16 h-[calc(100vh-64px)] p-4 overflow-y-auto;
+}
+
+.app-layout-rightbar {
+  @apply hidden xl:block w-[320px] shrink-0 sticky top-16 h-[calc(100vh-64px)] p-4 overflow-y-auto;
+}
+
+.app-layout-placeholder {
+  @apply p-4 border-2 border-dashed rounded-lg opacity-50 text-center;
+  border-color: var(--color-border);
+  color: var(--color-text-secondary);
+}
+
+.app-layout-content {
+  @apply flex-1 w-full max-w-[700px] mx-auto min-h-[2000px] p-4;
+}
+
+.app-layout-main.chat-mode .app-layout-content {
+  @apply max-w-none mx-0 p-0 min-h-0 h-full;
+}
+
+/* Mobile Drawer Styles */
+.mobile-drawer-overlay {
+  @apply fixed inset-0 z-40 lg:hidden transition-opacity bg-black/50;
+}
+
+.mobile-drawer-overlay.open {
+  @apply opacity-100 pointer-events-auto;
+}
+
+.mobile-drawer-overlay.closed {
+  @apply opacity-0 pointer-events-none;
+}
+
+.mobile-drawer-content {
+  @apply fixed inset-y-0 left-0 z-50 w-[280px] p-4 lg:hidden transition-transform duration-300 shadow-xl;
+  background-color: var(--color-bg-secondary);
+}
+
+.mobile-drawer-content.open {
+  @apply translate-x-0;
+}
+
+.mobile-drawer-content.closed {
+  @apply -translate-x-full;
+}
+
+/* Notification Toast Animation */
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.3s ease-out;
+}
+

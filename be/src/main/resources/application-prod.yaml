@@ -1,0 +1,59 @@
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      # Khi chạy production, chỉ update table nếu có thay đổi entity, không drop.
+      ddl-auto: update
+    show-sql: false
+
+  # File Upload Config
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 100MB
+
+  # Kafka Configuration (Tắt hoặc cấu hình sau nếu có dùng thật trên Cloud)
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: social-network-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+  # Redis Configuration (Sẽ cấu hình bằng Biến môi trường trên Render)
+  data:
+    redis:
+      url: ${REDIS_URL}
+
+  # OAuth2 Configuration (Google)
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: 278614778953-l8o6vhbs6gjbgme9g09lrl7rml5apojs.apps.googleusercontent.com
+            client-secret: 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
+            scope:
+              - email
+              - profile
+
+jwt:
+  secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+  expiration: 86400000        # 24 hours (Access Token)
+  refresh-expiration: 604800000  # 7 days (Refresh Token)
+
+# Cloudinary Configuration
+cloudinary:
+  cloud-name: dyf7xxq0j
+  api-key: 325935644393225
+  api-secret: mUluYROQQbk-T4vuoqYxRXy1zcI

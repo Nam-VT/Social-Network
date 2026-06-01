@@ -5,6 +5,7 @@ import com.vtn.social_network.dto.user.response.FriendResponse;
 import com.vtn.social_network.enums.ErrorCode;
 import com.vtn.social_network.service.FriendshipService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -69,10 +70,48 @@ public class FriendshipController {
                                 .build());
         }
 
+        @GetMapping("/requests/sent")
+        public ResponseEntity<ApiResponse<List<FriendResponse>>> getSentRequests(
+                        Authentication authentication) {
+                List<FriendResponse> data = friendshipService.getSentRequests(authentication.getName());
+                return ResponseEntity.ok(ApiResponse.<List<FriendResponse>>builder()
+                                .status(ErrorCode.SUCCESS.getStatus())
+                                .message(ErrorCode.SUCCESS.getMessage())
+                                .data(data)
+                                .build());
+        }
+
+        @DeleteMapping("/request/cancel/{userId}")
+        public ResponseEntity<ApiResponse<Object>> cancelFriendRequest(
+                        Authentication authentication, @PathVariable Long userId) {
+                friendshipService.cancelFriendRequest(authentication.getName(), userId);
+                return ResponseEntity.ok(ApiResponse.builder()
+                                .status(ErrorCode.SUCCESS.getStatus())
+                                .message("Đã hủy lời mời kết bạn")
+                                .build());
+        }
+
         @GetMapping("/{username}")
-        public ResponseEntity<ApiResponse<List<FriendResponse>>> getFriendsList(
-                        Authentication authentication, @PathVariable String username) {
-                List<FriendResponse> data = friendshipService.getFriendsList(authentication.getName(), username);
+        public ResponseEntity<ApiResponse<Page<FriendResponse>>> getFriendsList(
+                        Authentication authentication,
+                        @PathVariable String username,
+                        @RequestParam(defaultValue = "0") int page,
+                        @RequestParam(defaultValue = "20") int size) {
+                Page<FriendResponse> data = friendshipService
+                                .getFriendsList(authentication.getName(), username, page, size);
+                return ResponseEntity.ok(ApiResponse.<Page<FriendResponse>>builder()
+                                .status(ErrorCode.SUCCESS.getStatus())
+                                .message(ErrorCode.SUCCESS.getMessage())
+                                .data(data)
+                                .build());
+        }
+
+        @GetMapping("/mutual/{username}")
+        public ResponseEntity<ApiResponse<List<FriendResponse>>> getMutualFriends(
+                        Authentication authentication,
+                        @PathVariable String username,
+                        @RequestParam(defaultValue = "5") int limit) {
+                List<FriendResponse> data = friendshipService.getMutualFriends(authentication.getName(), username, limit);
                 return ResponseEntity.ok(ApiResponse.<List<FriendResponse>>builder()
                                 .status(ErrorCode.SUCCESS.getStatus())
                                 .message(ErrorCode.SUCCESS.getMessage())

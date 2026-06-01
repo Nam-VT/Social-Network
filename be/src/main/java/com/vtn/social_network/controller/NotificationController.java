@@ -7,11 +7,10 @@ import com.vtn.social_network.enums.ErrorCode;
 import com.vtn.social_network.service.NotificationService;
 import com.vtn.social_network.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/notifications")
@@ -26,18 +25,22 @@ public class NotificationController {
          * Password).
          */
         @GetMapping
-        public ResponseEntity<ApiResponse<List<NotificationResponse>>> getMyNotifications(
-                        Authentication authentication) {
+        public ResponseEntity<ApiResponse<Page<NotificationResponse>>> getMyNotifications(
+                        Authentication authentication,
+                        @RequestParam(defaultValue = "0") int page,
+                        @RequestParam(defaultValue = "10") int size) {
                 User user = userRepository.findByUsername(authentication.getName())
                                 .orElseThrow(() -> new RuntimeException(ErrorCode.USER_NOT_FOUND.getMessage()));
 
-                List<NotificationResponse> data = notificationService.getMyNotifications(user);
+                Page<NotificationResponse> data = notificationService
+                                .getMyNotifications(user, page, size);
 
-                return ResponseEntity.ok(ApiResponse.<List<NotificationResponse>>builder()
-                                .status(ErrorCode.SUCCESS.getStatus())
-                                .message(ErrorCode.SUCCESS.getMessage())
-                                .data(data)
-                                .build());
+                return ResponseEntity
+                                .ok(ApiResponse.<Page<NotificationResponse>>builder()
+                                                .status(ErrorCode.SUCCESS.getStatus())
+                                                .message(ErrorCode.SUCCESS.getMessage())
+                                                .data(data)
+                                                .build());
         }
 
         /**
@@ -49,6 +52,35 @@ public class NotificationController {
                 return ResponseEntity.ok(ApiResponse.builder()
                                 .status(ErrorCode.SUCCESS.getStatus())
                                 .message("Đã đánh dấu đã đọc")
+                                .build());
+        }
+
+        /**
+         * Đếm số thông báo chưa đọc — dùng cho badge icon chuông trên Frontend.
+         */
+        @GetMapping("/unread-count")
+        public ResponseEntity<ApiResponse<Long>> getUnreadCount(Authentication authentication) {
+                User user = userRepository.findByUsername(authentication.getName())
+                                .orElseThrow(() -> new RuntimeException(ErrorCode.USER_NOT_FOUND.getMessage()));
+                long count = notificationService.getUnreadCount(user);
+                return ResponseEntity.ok(ApiResponse.<Long>builder()
+                                .status(ErrorCode.SUCCESS.getStatus())
+                                .message(ErrorCode.SUCCESS.getMessage())
+                                .data(count)
+                                .build());
+        }
+
+        /**
+         * Đánh dấu tất cả thông báo là đã đọc.
+         */
+        @PutMapping("/read-all")
+        public ResponseEntity<ApiResponse<Object>> markAllAsRead(Authentication authentication) {
+                User user = userRepository.findByUsername(authentication.getName())
+                                .orElseThrow(() -> new RuntimeException(ErrorCode.USER_NOT_FOUND.getMessage()));
+                notificationService.markAllAsRead(user);
+                return ResponseEntity.ok(ApiResponse.builder()
+                                .status(ErrorCode.SUCCESS.getStatus())
+                                .message("Đã đánh dấu tất cả đã đọc")
                                 .build());
         }
 }

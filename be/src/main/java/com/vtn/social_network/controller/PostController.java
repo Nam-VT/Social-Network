@@ -8,6 +8,7 @@ import com.vtn.social_network.enums.ErrorCode;
 import com.vtn.social_network.service.PostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -73,10 +74,14 @@ public class PostController {
          * Lấy bài viết của một user.
          */
         @GetMapping("/user/{username}")
-        public ResponseEntity<ApiResponse<List<PostResponse>>> getUserPosts(
-                        Authentication authentication, @PathVariable String username) {
-                List<PostResponse> data = postService.getUserPosts(authentication.getName(), username);
-                return ResponseEntity.ok(ApiResponse.<List<PostResponse>>builder()
+        public ResponseEntity<ApiResponse<Page<PostResponse>>> getUserPosts(
+                        Authentication authentication,
+                        @PathVariable String username,
+                        @RequestParam(defaultValue = "0") int page,
+                        @RequestParam(defaultValue = "10") int size) {
+                Page<PostResponse> data = postService
+                                .getUserPosts(authentication.getName(), username, page, size);
+                return ResponseEntity.ok(ApiResponse.<Page<PostResponse>>builder()
                                 .status(ErrorCode.SUCCESS.getStatus())
                                 .message(ErrorCode.SUCCESS.getMessage())
                                 .data(data)
@@ -96,6 +101,37 @@ public class PostController {
                 return ResponseEntity.ok(ApiResponse.<List<PostResponse>>builder()
                                 .status(ErrorCode.SUCCESS.getStatus())
                                 .message(ErrorCode.SUCCESS.getMessage())
+                                .data(data)
+                                .build());
+        }
+
+        /**
+         * Lấy bài viết theo hashtag.
+         * GET /api/posts/hashtag/{tag}?page=0&size=10
+         */
+        @GetMapping("/hashtag/{tag}")
+        public ResponseEntity<ApiResponse<Page<PostResponse>>> getPostsByHashtag(
+                        Authentication authentication,
+                        @PathVariable String tag,
+                        @RequestParam(defaultValue = "0") int page,
+                        @RequestParam(defaultValue = "10") int size) {
+                Page<PostResponse> data = postService.getPostsByHashtag(authentication.getName(), tag, page, size);
+                return ResponseEntity.ok(ApiResponse.<Page<PostResponse>>builder()
+                                .status(ErrorCode.SUCCESS.getStatus())
+                                .data(data)
+                                .build());
+        }
+
+        /**
+         * Top hashtag trending.
+         * GET /api/posts/hashtags/trending?limit=10
+         */
+        @GetMapping("/hashtags/trending")
+        public ResponseEntity<ApiResponse<List<PostService.HashtagResponse>>> getTrendingHashtags(
+                        @RequestParam(defaultValue = "10") int limit) {
+                List<PostService.HashtagResponse> data = postService.getTrendingHashtags(limit);
+                return ResponseEntity.ok(ApiResponse.<List<PostService.HashtagResponse>>builder()
+                                .status(ErrorCode.SUCCESS.getStatus())
                                 .data(data)
                                 .build());
         }

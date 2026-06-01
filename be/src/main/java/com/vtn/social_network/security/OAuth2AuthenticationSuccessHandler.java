@@ -1,13 +1,12 @@
 package com.vtn.social_network.security;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import com.vtn.social_network.dto.auth.response.AuthResponse;
 import com.vtn.social_network.dto.ApiResponse;
 import com.vtn.social_network.enums.ErrorCode;
 import com.vtn.social_network.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;

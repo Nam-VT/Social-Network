@@ -19,6 +19,8 @@ public class CreatePostRequest {
 
     private Visibility visibility;
 
+    private Long groupId; // nullable — nếu null = bài cá nhân
+
     private List<MediaItem> mediaList;
 
     @Data

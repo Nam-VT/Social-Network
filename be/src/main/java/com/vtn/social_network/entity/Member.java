@@ -28,6 +28,8 @@ public class Member {
     @Builder.Default
     private Integer unreadCount = 0;
 
+    private Long lastReadMessageId;
+
     @CreationTimestamp
     private LocalDateTime joinedAt;
 }

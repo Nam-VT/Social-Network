@@ -34,6 +34,11 @@ public class Comment {
 
     private String mediaUrl; // Ảnh đính kèm comment
 
+    @Builder.Default
+    private boolean isEdited = false;
+
+    private LocalDateTime editedAt;
+
     @CreationTimestamp
     private LocalDateTime createdAt;
 }

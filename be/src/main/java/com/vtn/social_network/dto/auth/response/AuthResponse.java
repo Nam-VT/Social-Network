@@ -16,6 +16,18 @@ public class AuthResponse {
     @Builder.Default
     private String type = "Bearer";
 
-    private String username;
-    private String email;
+    private UserDto user;
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class UserDto {
+        private Long id;
+        private String username;
+        private String email;
+        private String fullName;
+        private String avatarUrl;
+    }
 }
+

@@ -16,7 +16,10 @@ public class StoryCreateRequest {
     // Loại media: IMAGE, VIDEO, TEXT
     private MediaType mediaType;
 
+    private String caption;
+    private String bgColor;
+    private com.vtn.social_network.enums.Visibility visibility;
+
     // Mặc định story sống 24h, hoặc tuỳ chọn
-    @Builder.Default
-    private int durationHours = 24;
+    private Integer durationHours = 24;
 }

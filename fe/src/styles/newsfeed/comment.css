@@ -1,0 +1,79 @@
+@reference "tailwindcss";
+
+.comment-section-wrapper {
+  @apply px-4 pb-4;
+}
+
+.comment-divider {
+  @apply border-t mb-3;
+  border-color: var(--color-border-light);
+}
+
+/* Comment Input */
+.comment-input-wrapper {
+  @apply flex gap-2 items-start mb-4;
+}
+
+.comment-input-avatar {
+  @apply w-8 h-8 rounded-full object-cover border mt-1;
+  border-color: var(--color-border-light);
+}
+
+.comment-input-box {
+  @apply flex-1 flex flex-col bg-[var(--color-bg-tertiary)] rounded-2xl px-3 py-2;
+}
+
+.comment-input {
+  @apply w-full bg-transparent outline-none text-sm resize-none;
+  color: var(--color-text-primary);
+}
+
+.comment-input-actions {
+  @apply flex items-center justify-end gap-2 mt-1 text-[var(--color-text-secondary)];
+}
+
+.comment-icon-btn {
+  @apply p-1.5 rounded-full hover:bg-[var(--color-bg-hover)] transition-colors cursor-pointer;
+}
+
+/* Comment Item */
+.comment-item {
+  @apply flex gap-2 items-start mb-3;
+}
+
+.comment-avatar {
+  @apply w-8 h-8 rounded-full object-cover border;
+  border-color: var(--color-border-light);
+}
+
+.comment-content-wrapper {
+  @apply flex flex-col;
+}
+
+.comment-bubble {
+  @apply bg-[var(--color-bg-tertiary)] rounded-2xl px-3 py-2 w-fit;
+}
+
+.comment-author {
+  @apply text-sm font-semibold mb-0.5;
+  color: var(--color-text-primary);
+}
+
+.comment-text {
+  @apply text-sm;
+  color: var(--color-text-primary);
+}
+
+.comment-actions {
+  @apply flex items-center gap-3 text-xs font-semibold px-2 mt-1;
+  color: var(--color-text-secondary);
+}
+
+.comment-action-link {
+  @apply cursor-pointer hover:underline;
+}
+
+.comment-time {
+  @apply font-normal;
+  color: var(--color-text-tertiary);
+}

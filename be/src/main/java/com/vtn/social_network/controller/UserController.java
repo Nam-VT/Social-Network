@@ -1,17 +1,29 @@
 package com.vtn.social_network.controller;
 
 import com.vtn.social_network.dto.ApiResponse;
+import com.vtn.social_network.dto.user.request.PrivacyUpdateRequest;
 import com.vtn.social_network.dto.user.request.UpdateProfileRequest;
 import com.vtn.social_network.dto.user.response.FriendResponse;
 import com.vtn.social_network.dto.user.response.UserProfileResponse;
+import com.vtn.social_network.dto.user.response.UserPresenceResponse;
+import com.vtn.social_network.entity.User;
+import com.vtn.social_network.entity.UserActivityLog;
 import com.vtn.social_network.enums.ErrorCode;
+import com.vtn.social_network.repository.UserRepository;
 import com.vtn.social_network.service.FriendshipService;
+import com.vtn.social_network.service.PresenceService;
+import com.vtn.social_network.service.StorageService;
+import com.vtn.social_network.service.UserActivityLogService;
 import com.vtn.social_network.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/users")
@@ -20,6 +32,10 @@ public class UserController {
 
         private final UserService userService;
         private final FriendshipService friendshipService;
+        private final StorageService storageService;
+        private final PresenceService presenceService;
+        private final UserActivityLogService activityLogService;
+        private final UserRepository userRepository;
 
         /**
          * Xem profile của chính mình (dựa trên JWT).
@@ -55,7 +71,7 @@ public class UserController {
         @PutMapping("/me/privacy")
         public ResponseEntity<ApiResponse<UserProfileResponse>> updatePrivacy(
                         Authentication authentication,
-                        @Valid @RequestBody com.vtn.social_network.dto.user.request.PrivacyUpdateRequest request) {
+                        @Valid @RequestBody PrivacyUpdateRequest request) {
                 UserProfileResponse data = userService.updatePrivacy(authentication.getName(), request);
                 return ResponseEntity.ok(ApiResponse.<UserProfileResponse>builder()
                                 .status(ErrorCode.SUCCESS.getStatus())
@@ -108,13 +124,77 @@ public class UserController {
          * Lấy danh sách bị chặn
          */
         @GetMapping("/block")
-        public ResponseEntity<ApiResponse<java.util.List<FriendResponse>>> getBlockedUsers(
+        public ResponseEntity<ApiResponse<List<FriendResponse>>> getBlockedUsers(
                         Authentication authentication) {
-                java.util.List<FriendResponse> data = friendshipService.getBlockedUsers(authentication.getName());
-                return ResponseEntity.ok(ApiResponse.<java.util.List<FriendResponse>>builder()
+                List<FriendResponse> data = friendshipService.getBlockedUsers(authentication.getName());
+                return ResponseEntity.ok(ApiResponse.<List<FriendResponse>>builder()
                                 .status(ErrorCode.SUCCESS.getStatus())
                                 .message(ErrorCode.SUCCESS.getMessage())
                                 .data(data)
+                                .build());
+        }
+
+        /**
+         * Upload avatar (anh đai diện).
+         */
+        @PostMapping(value = "/me/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+        public ResponseEntity<ApiResponse<UserProfileResponse>> uploadAvatar(
+                        Authentication authentication,
+                        @RequestParam("file") MultipartFile file) {
+                String url = storageService.upload(file, "avatars");
+                UserProfileResponse data = userService.updateAvatar(authentication.getName(), url);
+                return ResponseEntity.ok(ApiResponse.<UserProfileResponse>builder()
+                                .status(ErrorCode.SUCCESS.getStatus())
+                                .message("Cập nhật ảnh đại diện thành công")
+                                .data(data)
+                                .build());
+        }
+
+        /**
+         * Upload ảnh bìa (cover photo).
+         */
+        @PostMapping(value = "/me/cover", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+        public ResponseEntity<ApiResponse<UserProfileResponse>> uploadCover(
+                        Authentication authentication,
+                        @RequestParam("file") MultipartFile file) {
+                String url = storageService.upload(file, "covers");
+                UserProfileResponse data = userService.updateCover(authentication.getName(), url);
+                return ResponseEntity.ok(ApiResponse.<UserProfileResponse>builder()
+                                .status(ErrorCode.SUCCESS.getStatus())
+                                .message("Cập nhật ảnh bìa thành công")
+                                .data(data)
+                                .build());
+        }
+
+        /**
+         * Kiểm tra trạng thái trực tuyến của user.
+         */
+        @GetMapping("/{username}/presence")
+        public ResponseEntity<ApiResponse<UserPresenceResponse>> getPresence(@PathVariable String username) {
+                UserPresenceResponse data = UserPresenceResponse.builder()
+                                .username(username)
+                                .isOnline(presenceService.isUserOnline(username))
+                                .lastSeenAt(presenceService.getLastSeenAt(username))
+                                .build();
+                return ResponseEntity.ok(ApiResponse.<UserPresenceResponse>builder()
+                                .status(ErrorCode.SUCCESS.getStatus())
+                                .data(data)
+                                .build());
+        }
+
+        /**
+         * Lịch sử hoạt động của user (đăng nhập, đổi mật khẩu...).
+         */
+        @GetMapping("/me/activity-log")
+        public ResponseEntity<ApiResponse<org.springframework.data.domain.Page<UserActivityLog>>> getMyActivityLog(
+                        Authentication authentication,
+                        @RequestParam(defaultValue = "0") int page,
+                        @RequestParam(defaultValue = "20") int size) {
+                User user = userRepository.findByUsername(authentication.getName())
+                                .orElseThrow(() -> new RuntimeException(ErrorCode.USER_NOT_FOUND.getMessage()));
+                return ResponseEntity.ok(ApiResponse.<org.springframework.data.domain.Page<UserActivityLog>>builder()
+                                .status(ErrorCode.SUCCESS.getStatus())
+                                .data(activityLogService.getMyActivityLog(user, page, size))
                                 .build());
         }
 }

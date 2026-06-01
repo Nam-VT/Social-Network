@@ -9,8 +9,6 @@ import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 
-import java.time.LocalDateTime;
-
 @Document(indexName = "posts")
 @Data
 @Builder
@@ -36,6 +34,6 @@ public class PostDocument {
     @Field(type = FieldType.Keyword)
     private String visibility;
 
-    @Field(type = FieldType.Date)
-    private LocalDateTime createdAt;
+    @Field(type = FieldType.Long)
+    private Long createdAt;
 }

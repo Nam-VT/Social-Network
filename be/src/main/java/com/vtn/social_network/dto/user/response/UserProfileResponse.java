@@ -1,6 +1,7 @@
 package com.vtn.social_network.dto.user.response;
 
 import com.vtn.social_network.enums.Gender;
+import com.vtn.social_network.enums.Visibility;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -25,6 +26,16 @@ public class UserProfileResponse {
     private String website;
     private LocalDate birthDate;
     private Gender gender;
-    private com.vtn.social_network.enums.Visibility friendListVisibility;
+    private String relationshipStatus;
+    private Visibility friendListVisibility;
     private LocalDateTime createdAt;
+
+    // === Computed fields (view-dependent) ===
+    private String friendshipStatus;   // NONE | PENDING_SENT | PENDING_RECEIVED | FRIEND
+    private long friendCount;
+    private long followerCount;
+    private long followingCount;
+    private boolean isFollowing;
+    private boolean isBlocked;
+    private boolean isOnline;
 }

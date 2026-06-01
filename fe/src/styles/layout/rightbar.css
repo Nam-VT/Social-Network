@@ -1,0 +1,63 @@
+@reference "tailwindcss";
+
+.rightbar-wrapper {
+  @apply h-full flex flex-col gap-6;
+}
+
+/* --- Block Chung --- */
+.rightbar-block {
+  @apply flex flex-col gap-3;
+}
+
+.rightbar-block-title {
+  @apply text-base font-semibold px-2;
+  color: var(--color-text-secondary);
+}
+
+/* --- Trending Hashtags --- */
+.trending-item {
+  @apply flex flex-col px-2 py-2 rounded-lg cursor-pointer transition-colors;
+}
+
+.trending-item:hover {
+  background-color: var(--color-bg-hover);
+}
+
+.trending-hashtag {
+  @apply font-semibold;
+  color: var(--color-text-primary);
+}
+
+.trending-count {
+  @apply text-xs;
+  color: var(--color-text-tertiary);
+}
+
+/* --- Contacts --- */
+.contact-item {
+  @apply flex items-center gap-3 px-2 py-2 rounded-lg cursor-pointer transition-colors;
+}
+
+.contact-item:hover {
+  background-color: var(--color-bg-hover);
+}
+
+.contact-avatar-wrapper {
+  @apply relative;
+}
+
+.contact-avatar {
+  @apply w-9 h-9 rounded-full object-cover border;
+  border-color: var(--color-border-light);
+}
+
+.contact-online-dot {
+  @apply absolute bottom-0 right-0 w-3 h-3 rounded-full border-2;
+  background-color: var(--color-success);
+  border-color: var(--color-bg-primary);
+}
+
+.contact-name {
+  @apply text-sm font-medium;
+  color: var(--color-text-primary);
+}

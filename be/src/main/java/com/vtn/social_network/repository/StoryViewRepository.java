@@ -7,12 +7,17 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface StoryViewRepository extends JpaRepository<StoryView, Long> {
     List<StoryView> findByStoryOrderByViewedAtDesc(Story story);
 
+    List<StoryView> findByStoryInOrderByViewedAtDesc(List<Story> stories);
+
     boolean existsByStoryAndViewer(Story story, User viewer);
 
-    java.util.Optional<StoryView> findByStoryAndViewer(Story story, User viewer);
+    Optional<StoryView> findFirstByStoryAndViewer(Story story, User viewer);
+
+    void deleteByStory(Story story);
 }
