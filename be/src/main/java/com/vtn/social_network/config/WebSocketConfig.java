@@ -26,11 +26,11 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         // Native WebSocket (cho Vite frontend)
         registry.addEndpoint("/ws")
-                .setAllowedOrigins("http://localhost:3000", "http://localhost:5173");
+                .setAllowedOriginPatterns("*");
 
         // SockJS fallback (cho legacy clients)
         registry.addEndpoint("/ws")
-                .setAllowedOrigins("http://localhost:3000", "http://localhost:5173")
+                .setAllowedOriginPatterns("*")
                 .withSockJS();
     }
 
