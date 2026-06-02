@@ -7,7 +7,7 @@
 }
 
 .navbar-left {
-  @apply flex items-center gap-4 w-1/3;
+  @apply flex items-center gap-4 flex-1;
 }
 
 .navbar-logo-icon {
@@ -16,7 +16,7 @@
 }
 
 .navbar-logo-text {
-  @apply hidden md:block text-xl font-bold tracking-tight;
+  @apply hidden md:block text-xl font-bold tracking-tight whitespace-nowrap;
   color: var(--color-accent);
 }
 
