@@ -1,18 +1,30 @@
 services:
   # ===== MySQL =====
-  # mysql:
-  #   image: mysql:8.0
-  #   container_name: social-network-mysql
-  #   restart: unless-stopped
-  #   ports:
-  #     - "3306:3306"
-  #   environment:
-  #     MYSQL_ROOT_PASSWORD: 123456
-  #     MYSQL_DATABASE: social_network
-  #   volumes:
-  #     - mysql_data:/var/lib/mysql
+  mysql:
+    image: mysql:8.0
+    container_name: social-network-mysql
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: social_network
+      MYSQL_USER: social_user
+      MYSQL_PASSWORD: social_password
+    volumes:
+      - mysql_data:/var/lib/mysql
+    command: --default-authentication-plugin=caching_sha2_password
 
-  #   command: --default-authentication-plugin=caching_sha2_password
+  # ===== Redis (Cache + Rate Limiting) =====
+  redis:
+    image: redis:7.2-alpine
+    container_name: social-network-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --save 60 1 --loglevel warning
 
   # ===== Zookeeper (required by Kafka) =====
   zookeeper:
@@ -43,38 +55,17 @@ services:
 
   # ===== Elasticsearch =====
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:9.0.1
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.10.2
     container_name: social-network-elasticsearch
     restart: unless-stopped
     ports:
       - "9200:9200"
-      - "9300:9300"
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
     volumes:
       - es_data:/usr/share/elasticsearch/data
-
-  # ===== MailHog (fake SMTP for dev) =====
-  mailhog:
-    image: mailhog/mailhog:latest
-    container_name: social-network-mailhog
-    restart: unless-stopped
-    ports:
-      - "1025:1025" # SMTP
-      - "8025:8025" # Web UI (xem email tai http://localhost:8025)
-
-  # ===== Redis (Cache + Rate Limiting) =====
-  redis:
-    image: redis:7.2-alpine
-    container_name: social-network-redis
-    restart: unless-stopped
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    command: redis-server --save 60 1 --loglevel warning
 
 volumes:
   mysql_data:

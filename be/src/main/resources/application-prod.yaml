@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    url: ${DB_URL:jdbc:mysql://localhost:3306/social_network}
+    username: ${DB_USERNAME:social_user}
+    password: ${DB_PASSWORD:social_password}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
@@ -16,33 +16,28 @@ spring:
       max-file-size: 50MB
       max-request-size: 100MB
 
-  # Kafka Configuration (Sử dụng Cloud Kafka như Upstash)
+  # Kafka Configuration (chạy local trên cùng VM, không cần SASL_SSL)
   kafka:
-    bootstrap-servers: ${KAFKA_URL}
-    properties:
-      security.protocol: SASL_SSL
-      sasl.mechanism: SCRAM-SHA-256
-      sasl.jaas.config: org.apache.kafka.common.security.scram.ScramLoginModule required username="${KAFKA_USERNAME}" password="${KAFKA_PASSWORD}";
-      spring.json.trusted.packages: "*"
+    bootstrap-servers: ${KAFKA_URL:localhost:9092}
     consumer:
       group-id: social-network-group
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 
-  # Elasticsearch Configuration (Sử dụng Cloud Elasticsearch)
+  # Elasticsearch Configuration (chạy local trên cùng VM, không cần auth)
   elasticsearch:
-    uris: ${ELASTICSEARCH_URL}
-    username: ${ELASTICSEARCH_USERNAME}
-    password: ${ELASTICSEARCH_PASSWORD}
+    uris: ${ELASTICSEARCH_URL:http://localhost:9200}
 
-  # Redis Configuration (Sẽ cấu hình bằng Biến môi trường trên Render)
+  # Redis Configuration
   data:
     redis:
-      url: ${REDIS_URL}
+      url: ${REDIS_URL:redis://localhost:6379}
 
   # OAuth2 Configuration (Google)
   security:
