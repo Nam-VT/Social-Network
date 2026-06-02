@@ -63,15 +63,9 @@ cloudinary:
   api-secret: mUluYROQQbk-T4vuoqYxRXy1zcI
 
   # Dummy Mail Configuration (để tránh lỗi thiếu JavaMailSender)
-spring:
-  mail:
-    host: ${SMTP_HOST:localhost}
-    port: ${SMTP_PORT:1025}
-    username: ${SMTP_USERNAME:noreply@social-network.local}
-    password: ${SMTP_PASSWORD:password}
-    properties:
-      mail:
-        smtp:
-          auth: false
-          starttls:
-            enable: false
+spring.mail.host: ${SMTP_HOST:localhost}
+spring.mail.port: ${SMTP_PORT:1025}
+spring.mail.username: ${SMTP_USERNAME:noreply@social-network.local}
+spring.mail.password: ${SMTP_PASSWORD:password}
+spring.mail.properties.mail.smtp.auth: false
+spring.mail.properties.mail.smtp.starttls.enable: false
