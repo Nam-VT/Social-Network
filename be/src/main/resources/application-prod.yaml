@@ -61,3 +61,17 @@ cloudinary:
   cloud-name: dyf7xxq0j
   api-key: 325935644393225
   api-secret: mUluYROQQbk-T4vuoqYxRXy1zcI
+
+  # Dummy Mail Configuration (để tránh lỗi thiếu JavaMailSender)
+spring:
+  mail:
+    host: ${SMTP_HOST:localhost}
+    port: ${SMTP_PORT:1025}
+    username: ${SMTP_USERNAME:noreply@social-network.local}
+    password: ${SMTP_PASSWORD:password}
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
