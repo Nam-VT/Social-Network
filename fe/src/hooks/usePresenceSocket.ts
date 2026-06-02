@@ -18,7 +18,7 @@ export const usePresenceSocket = () => {
     if (!token || !user) return;
 
     const client = new Client({
-      brokerURL: `ws://localhost:8080/ws`,
+      brokerURL: import.meta.env.VITE_WS_URL || `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/ws`,
       connectHeaders: { Authorization: `Bearer ${token}` },
       reconnectDelay: 5000,
       heartbeatIncoming: 10000,

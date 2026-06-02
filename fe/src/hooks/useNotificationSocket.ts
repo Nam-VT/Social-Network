@@ -32,7 +32,7 @@ export const useNotificationSocket = (onNotification?: (notification: Notificati
 
     const client = new Client({
       // Native WebSocket - thay vì SockJS
-      brokerURL: `ws://localhost:8080/ws`,
+      brokerURL: import.meta.env.VITE_WS_URL || `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/ws`,
       connectHeaders: {
         Authorization: `Bearer ${token}`,
       },
