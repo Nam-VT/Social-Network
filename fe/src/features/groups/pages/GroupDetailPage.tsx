@@ -28,13 +28,30 @@ export const GroupDetailPage = () => {
 
   const handleCopyLink = () => {
     const link = window.location.href;
-    navigator.clipboard.writeText(link).then(() => {
-      setIsCopied(true);
-      toast.success('Đã sao chép link nhóm vào clipboard!');
-      setTimeout(() => setIsCopied(false), 2500);
-    }).catch(() => {
-      toast.error('Không thể sao chép, vui lòng thử lại.');
-    });
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(link).then(() => {
+        setIsCopied(true);
+        toast.success('Đã sao chép link nhóm vào clipboard!');
+        setTimeout(() => setIsCopied(false), 2500);
+      }).catch(() => {
+        toast.error('Không thể sao chép, vui lòng thử lại.');
+      });
+    } else {
+      // Fallback for HTTP
+      const textArea = document.createElement("textarea");
+      textArea.value = link;
+      document.body.appendChild(textArea);
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        setIsCopied(true);
+        toast.success('Đã sao chép link nhóm vào clipboard!');
+        setTimeout(() => setIsCopied(false), 2500);
+      } catch (err) {
+        toast.error('Lỗi sao chép, vui lòng copy thủ công trên thanh địa chỉ.');
+      }
+      document.body.removeChild(textArea);
+    }
   };
 
   const parsedGroupId = Number(groupId);

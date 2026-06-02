@@ -175,10 +175,26 @@ export const PostItem = ({ post, defaultShowComments = false, onDeleted }: PostP
 
   const handleCopyLink = () => {
     const url = `${window.location.origin}/post/${post.id}`;
-    navigator.clipboard.writeText(url).then(() => {
-      alert('Đã sao chép liên kết bài viết!');
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(url).then(() => {
+        alert('Đã sao chép liên kết bài viết!');
+        setShowOptions(false);
+      });
+    } else {
+      // Fallback for HTTP (non-secure context)
+      const textArea = document.createElement("textarea");
+      textArea.value = url;
+      document.body.appendChild(textArea);
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        alert('Đã sao chép liên kết bài viết!');
+      } catch (err) {
+        alert('Lỗi sao chép, vui lòng copy thủ công: ' + url);
+      }
+      document.body.removeChild(textArea);
       setShowOptions(false);
-    });
+    }
   };
 
   // Feature #6: Share Modal
