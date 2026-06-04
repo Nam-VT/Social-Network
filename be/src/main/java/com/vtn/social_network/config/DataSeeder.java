@@ -4,6 +4,7 @@ import com.vtn.social_network.entity.User;
 import com.vtn.social_network.enums.UserRole;
 import com.vtn.social_network.enums.UserStatus;
 import com.vtn.social_network.repository.UserRepository;
+import com.vtn.social_network.service.SearchIndexingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
@@ -18,6 +19,7 @@ public class DataSeeder implements CommandLineRunner {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final SearchIndexingService searchIndexingService;
 
     @Override
     @Transactional
@@ -38,6 +40,15 @@ public class DataSeeder implements CommandLineRunner {
             log.info("Đã tạo tài khoản admin mặc định: admin / admin123");
         } else {
             log.info("Tài khoản admin đã tồn tại.");
+        }
+
+        // Tự động đồng bộ tất cả Post từ MySQL sang Elasticsearch khi khởi động
+        log.info("Đang đồng bộ dữ liệu Post sang Elasticsearch...");
+        try {
+            searchIndexingService.syncAllPostsToES();
+            log.info("Đồng bộ dữ liệu Elasticsearch thành công!");
+        } catch (Exception e) {
+            log.error("Lỗi khi đồng bộ dữ liệu Elasticsearch: ", e);
         }
     }
 }
