@@ -17,6 +17,7 @@ import { AdminDashboardPage } from '@/features/admin/pages/AdminDashboardPage';
 import { AdminUsersPage } from '@/features/admin/pages/AdminUsersPage';
 import { AdminReportsPage } from '@/features/admin/pages/AdminReportsPage';
 import { AdminAuditLogsPage } from '@/features/admin/pages/AdminAuditLogsPage';
+import { OAuth2CallbackPage } from '@/features/auth/pages/OAuth2CallbackPage';
 
 export const AppRoutes = () => {
   return (
@@ -26,6 +27,9 @@ export const AppRoutes = () => {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
       </Route>
+
+      {/* OAuth2 Callback (không cần auth, không cần PublicRoute redirect) */}
+      <Route path="/oauth2/callback" element={<OAuth2CallbackPage />} />
 
       {/* Private Routes */}
       <Route element={<PrivateRoute />}>

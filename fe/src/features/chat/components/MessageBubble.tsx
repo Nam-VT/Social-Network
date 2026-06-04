@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { MoreHorizontal, Pencil, Trash2, SmilePlus } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { formatDistanceToNow } from 'date-fns';
@@ -60,10 +60,17 @@ export const MessageBubble = ({ message, onMessageUpdated, readByUsers, onReply,
     },
   });
 
-  const timeAgo = formatDistanceToNow(new Date(message.createdAt), {
-    addSuffix: true,
-    locale: vi,
-  });
+  // Auto-refresh timestamp mỗi 30 giây
+  const [timeAgo, setTimeAgo] = useState(() =>
+    formatDistanceToNow(new Date(message.createdAt), { addSuffix: true, locale: vi })
+  );
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeAgo(formatDistanceToNow(new Date(message.createdAt), { addSuffix: true, locale: vi }));
+    }, 30000);
+    return () => clearInterval(timer);
+  }, [message.createdAt]);
 
   // Group reactions by type
   const reactionGroups = (message.reactions || []).reduce((acc: Record<string, number>, r) => {
@@ -265,8 +272,8 @@ export const MessageBubble = ({ message, onMessageUpdated, readByUsers, onReply,
           {timeAgo}
         </span>
 
-        {/* Read Receipts */}
-        {readByUsers && readByUsers.length > 0 && (
+        {/* Read Receipts — chỉ hiện trên tin nhắn mình gửi */}
+        {isMine && readByUsers && readByUsers.length > 0 && (
           <div className={`flex items-center gap-0.5 mt-1 ${isMine ? 'justify-end' : 'justify-start'}`}>
             {readByUsers.slice(0, 3).map((member) => (
               <img

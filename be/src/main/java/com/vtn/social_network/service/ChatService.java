@@ -573,6 +573,7 @@ public class ChatService {
                 ChatRoom room = member.getChatRoom();
                 String roomName = room.getRoomName();
                 String avatarUrl = room.getAvatarUrl();
+                String otherUsername = null;
 
                 // Với PRIVATE room: resolve tên và avatar của người còn lại
                 if (room.getRoomType() == RoomType.PRIVATE) {
@@ -583,6 +584,7 @@ public class ChatService {
                                         .orElse(member.getUser()); // fallback: tự chat với chính mình
                         roomName = otherUser.getFullName();
                         avatarUrl = otherUser.getAvatarUrl();
+                        otherUsername = otherUser.getUsername();
                 }
 
                 ChatRoomResponse response = ChatRoomResponse.builder()
@@ -592,6 +594,7 @@ public class ChatService {
                                 .roomType(room.getRoomType())
                                 .lastMessageAt(room.getLastMessageAt())
                                 .unreadCount(member.getUnreadCount())
+                                .otherUsername(otherUsername)
                                 .build();
 
                 chatMessageRepository.findByChatRoomOrderByCreatedAtDesc(room, PageRequest.of(0, 1))

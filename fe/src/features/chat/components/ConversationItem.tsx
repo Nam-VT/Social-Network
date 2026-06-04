@@ -31,7 +31,7 @@ export const ConversationItem = ({ room, isActive, onClick }: ConversationItemPr
         {/* Online dot (chỉ hiện với DM, real-time từ PresenceStore) */}
         {room.roomType === 'PRIVATE' && (
           <span className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-[var(--color-bg-secondary)] transition-colors duration-500 ${
-            isOnline(displayName) ? 'bg-green-400' : 'bg-slate-300'
+            room.otherUsername && isOnline(room.otherUsername) ? 'bg-green-400' : 'bg-slate-300'
           }`} />
         )}
       </div>

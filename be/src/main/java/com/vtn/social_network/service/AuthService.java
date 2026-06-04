@@ -60,6 +60,7 @@ public class AuthService {
                 .email(user.getEmail())
                 .fullName(user.getFullName())
                 .avatarUrl(user.getAvatarUrl())
+                .role(user.getRole().name())
                 .build();
 
         AuthResponse response = new AuthResponse();
@@ -208,6 +209,7 @@ public class AuthService {
                 .email(user.getEmail())
                 .fullName(user.getFullName())
                 .avatarUrl(user.getAvatarUrl())
+                .role(user.getRole().name())
                 .build();
 
         AuthResponse response = new AuthResponse();

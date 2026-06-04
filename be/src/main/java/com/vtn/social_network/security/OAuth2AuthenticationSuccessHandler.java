@@ -1,9 +1,6 @@
 package com.vtn.social_network.security;
 
-import tools.jackson.databind.ObjectMapper;
 import com.vtn.social_network.dto.auth.response.AuthResponse;
-import com.vtn.social_network.dto.ApiResponse;
-import com.vtn.social_network.enums.ErrorCode;
 import com.vtn.social_network.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -14,6 +11,8 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 @Slf4j
 @Component
@@ -23,9 +22,6 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
     @org.springframework.beans.factory.annotation.Autowired
     private AuthService authService;
 
-    @org.springframework.beans.factory.annotation.Autowired
-    private ObjectMapper objectMapper;
-
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
             Authentication authentication) throws IOException {
@@ -34,14 +30,16 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
 
         AuthResponse authResponse = authService.processOAuth2Login(oAuth2User);
 
-        ApiResponse<AuthResponse> apiResponse = ApiResponse.<AuthResponse>builder()
-                .status(ErrorCode.SUCCESS.getStatus())
-                .message(ErrorCode.SUCCESS.getMessage())
-                .data(authResponse)
-                .build();
-
-        response.setContentType("application/json;charset=UTF-8");
-        response.setStatus(HttpServletResponse.SC_OK);
-        response.getWriter().write(objectMapper.writeValueAsString(apiResponse));
+        // Redirect về Frontend kèm token trong URL params
+        String baseUrl = request.getScheme() + "://" + request.getServerName();
+        if (request.getServerPort() != 80 && request.getServerPort() != 443) {
+            baseUrl += ":" + request.getServerPort();
+        }
+        
+        String redirectUrl = baseUrl + "/oauth2/callback"
+                + "?token=" + URLEncoder.encode(authResponse.getToken(), StandardCharsets.UTF_8)
+                + "&refreshToken=" + URLEncoder.encode(authResponse.getRefreshToken(), StandardCharsets.UTF_8);
+        
+        response.sendRedirect(redirectUrl);
     }
 }

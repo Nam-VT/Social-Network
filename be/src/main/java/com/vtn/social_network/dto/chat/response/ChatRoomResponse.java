@@ -19,6 +19,7 @@ public class ChatRoomResponse {
     private RoomType roomType;
     private LocalDateTime lastMessageAt;
     private Integer unreadCount;
+    private String otherUsername; // Username of the other user in PRIVATE rooms
 
     // Preview last message
     private String lastMessageContent;

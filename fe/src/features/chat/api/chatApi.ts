@@ -12,6 +12,7 @@ export interface ChatRoom {
   lastMessageSenderName?: string;
   unreadCount: number;
   memberCount?: number;
+  otherUsername?: string; // Username of the other user in PRIVATE rooms
   createdAt: string;
 }
 
