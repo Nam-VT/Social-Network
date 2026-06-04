@@ -543,8 +543,13 @@ public class ChatService {
                 message.setEdited(true);
                 chatMessageRepository.save(message);
 
+                ChatMessageResponse response = toChatMessageResponse(message);
+
+                // Broadcast sửa tin nhắn real-time tới room
+                messagingTemplate.convertAndSend("/topic/chat/" + message.getChatRoom().getId(), response);
+
                 log.info("User {} đã sửa tin nhắn {}", username, messageId);
-                return toChatMessageResponse(message);
+                return response;
         }
 
         /**
@@ -566,6 +571,10 @@ public class ChatService {
                 message.setMediaType(null);
                 message.setRecalled(true);
                 chatMessageRepository.save(message);
+
+                // Broadcast gỡ tin nhắn real-time tới room
+                ChatMessageResponse response = toChatMessageResponse(message);
+                messagingTemplate.convertAndSend("/topic/chat/" + message.getChatRoom().getId(), response);
 
                 log.info("User {} đã gỡ tin nhắn {}", username, messageId);
         }

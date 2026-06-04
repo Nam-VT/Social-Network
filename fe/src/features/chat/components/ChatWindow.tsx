@@ -9,6 +9,10 @@ import { MessageInput } from './MessageInput';
 import { TypingIndicator } from './TypingIndicator';
 import { useChatSocket } from '../hooks/useChatSocket';
 import { useTypingIndicator } from '../hooks/useTypingIndicator';
+import { usePresenceStore } from '@/store/usePresenceStore';
+import { useTimeTick } from '@/hooks/useTimeTick';
+import { formatDistanceToNow } from 'date-fns';
+import { vi } from 'date-fns/locale';
 import { MediaLightbox } from './MediaLightbox';
 
 const MessageSkeleton = () => (
@@ -42,6 +46,11 @@ export const ChatWindow = ({ room, onToggleInfo, onMediaClick }: ChatWindowProps
   const topRef = useRef<HTMLDivElement>(null);
   const isFirstLoad = useRef(true);
   const currentUser = useAuthStore((state) => state.user);
+  const isOnline = usePresenceStore((state) => state.isOnline);
+  const getLastSeen = usePresenceStore((state) => state.getLastSeen);
+
+  // Auto-refresh mỗi 30s để cập nhật trạng thái "Hoạt động X phút trước"
+  useTimeTick(30_000);
 
   const [readReceipts, setReadReceipts] = useState<Record<number, ChatMember[]>>({});
 
@@ -199,7 +208,22 @@ export const ChatWindow = ({ room, onToggleInfo, onMediaClick }: ChatWindowProps
         <img src={avatar} alt={displayName} className="w-10 h-10 rounded-full object-cover border border-[var(--color-border-light)]" />
         <div className="flex-1 min-w-0">
           <div className="font-bold text-[var(--color-text-primary)] truncate">{displayName}</div>
-          <div className="text-xs text-green-500 font-medium">Đang hoạt động</div>
+          <div className="text-xs font-medium">
+            {(() => {
+              const online = room.roomType === 'PRIVATE' && room.otherUsername ? isOnline(room.otherUsername) : false;
+              if (room.roomType === 'GROUP') return <span className="text-slate-500">{room.memberCount || 0} thành viên</span>;
+              if (online) return <span className="text-green-500">Đang hoạt động</span>;
+              // Offline - hiển thị last seen
+              const otherUsername = room.otherUsername;
+              const lastSeen = otherUsername ? getLastSeen(otherUsername) : undefined;
+              if (lastSeen) {
+                try {
+                  return <span className="text-slate-400">Hoạt động {formatDistanceToNow(new Date(lastSeen), { addSuffix: false, locale: vi })} trước</span>;
+                } catch { return <span className="text-slate-400">Ngoại tuyến</span>; }
+              }
+              return <span className="text-slate-400">Ngoại tuyến</span>;
+            })()}
+          </div>
         </div>
         <div className="flex items-center gap-1">
           <button className="p-2 rounded-full hover:bg-[var(--color-bg-hover)] text-[var(--color-accent)] transition-colors" title="Gọi thoại">

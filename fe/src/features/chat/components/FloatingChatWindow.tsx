@@ -13,6 +13,7 @@ import { useTypingIndicator } from '@/features/chat/hooks/useTypingIndicator';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useFloatingChatStore } from '@/store/useFloatingChatStore';
 import { usePresenceStore } from '@/store/usePresenceStore';
+import { useTimeTick } from '@/hooks/useTimeTick';
 import { MediaLightbox } from './MediaLightbox';
 
 export const FloatingChatWindow = ({ roomId }: { roomId: number }) => {
@@ -30,6 +31,9 @@ export const FloatingChatWindow = ({ roomId }: { roomId: number }) => {
 
   const [replyingTo, setReplyingTo] = useState<ChatMessage | null>(null);
   const [activeMediaUrl, setActiveMediaUrl] = useState<string | null>(null);
+
+  // Auto-refresh mỗi 30s để cập nhật "Hoạt động X phút trước"
+  useTimeTick(30_000);
 
   // Feature 1: Read receipts state
   const [readReceipts, setReadReceipts] = useState<Record<number, ChatMember[]>>({});

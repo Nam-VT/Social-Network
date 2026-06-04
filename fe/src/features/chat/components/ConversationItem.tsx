@@ -3,6 +3,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import type { ChatRoom } from '../api/chatApi';
 import { usePresenceStore } from '@/store/usePresenceStore';
+import { useTimeTick } from '@/hooks/useTimeTick';
 
 interface ConversationItemProps {
   room: ChatRoom;
@@ -14,6 +15,9 @@ export const ConversationItem = ({ room, isActive, onClick }: ConversationItemPr
   const displayName = room.roomName || 'Cuộc trò chuyện';
   const avatar = room.avatarUrl || `https://api.dicebear.com/7.x/initials/svg?seed=${displayName}`;
   const isOnline = usePresenceStore((state) => state.isOnline);
+
+  // Auto-refresh mỗi 30s để "5 phút trước" tự cập nhật
+  useTimeTick(30_000);
 
   const timeAgo = room.lastMessageAt
     ? formatDistanceToNow(new Date(room.lastMessageAt), { addSuffix: true, locale: vi })

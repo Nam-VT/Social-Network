@@ -3,6 +3,10 @@ import { X, Search, Bell, Image, FileText, UserPlus, LogOut, ChevronDown, Chevro
 import { useQuery } from '@tanstack/react-query';
 import { chatApi, type ChatRoom } from '../api/chatApi';
 import { useAuthStore } from '@/store/useAuthStore';
+import { usePresenceStore } from '@/store/usePresenceStore';
+import { useTimeTick } from '@/hooks/useTimeTick';
+import { formatDistanceToNow } from 'date-fns';
+import { vi } from 'date-fns/locale';
 import { Link } from 'react-router-dom';
 
 interface ChatInfoSidebarProps {
@@ -18,6 +22,11 @@ export const ChatInfoSidebar = ({ room, onClose, onMediaClick }: ChatInfoSidebar
     media: true,
     settings: false,
   });
+  const isOnline = usePresenceStore((state) => state.isOnline);
+  const getLastSeen = usePresenceStore((state) => state.getLastSeen);
+
+  // Auto-refresh mỗi 30s
+  useTimeTick(30_000);
 
   const { data: members } = useQuery({
     queryKey: ['chat-members', room.id],
@@ -53,7 +62,18 @@ export const ChatInfoSidebar = ({ room, onClose, onMediaClick }: ChatInfoSidebar
           <img src={avatar} alt="" className="w-20 h-20 rounded-full object-cover shadow-sm border border-slate-200 mb-3" />
           <h2 className="font-bold text-lg text-slate-800">{displayName}</h2>
           <p className="text-sm text-slate-500 mt-1">
-            {room.roomType === 'GROUP' ? `${members?.length || 0} thành viên` : 'Đang hoạt động'}
+            {(() => {
+              if (room.roomType === 'GROUP') return `${members?.length || 0} thành viên`;
+              const online = room.otherUsername ? isOnline(room.otherUsername) : false;
+              if (online) return 'Đang hoạt động';
+              const lastSeen = room.otherUsername ? getLastSeen(room.otherUsername) : undefined;
+              if (lastSeen) {
+                try {
+                  return `Hoạt động ${formatDistanceToNow(new Date(lastSeen), { addSuffix: false, locale: vi })} trước`;
+                } catch { return 'Ngoại tuyến'; }
+              }
+              return 'Ngoại tuyến';
+            })()}
           </p>
 
           <div className="flex gap-6 mt-6">
