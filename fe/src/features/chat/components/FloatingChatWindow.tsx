@@ -190,7 +190,7 @@ export const FloatingChatWindow = ({ roomId }: { roomId: number }) => {
             <h4 className="font-bold text-[13px] text-slate-800 truncate">{displayName}</h4>
             <span className={`text-[10px] font-medium transition-colors duration-300 ${online ? 'text-green-500' : 'text-slate-400'}`}>
               {roomInfo.roomType === 'GROUP' ? `${roomInfo.memberCount || members?.length || 0} thành viên` : online ? 'Đang hoạt động' : (() => {
-                const otherUsername = otherMember?.username;
+                const otherUsername = roomInfo.otherUsername;
                 const lastSeen = otherUsername ? getLastSeen(otherUsername) : undefined;
                 if (lastSeen) {
                   try {
