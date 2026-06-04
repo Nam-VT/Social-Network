@@ -161,7 +161,10 @@ public class ChatService {
 
                 ChatMessageResponse messageResponse = toChatMessageResponse(message);
 
-                // Push real-time cho tất cả thành viên khác
+                // Broadcast cho những client đang mở trực tiếp cửa sổ chat này
+                messagingTemplate.convertAndSend("/topic/chat/" + roomId, messageResponse);
+
+                // Push real-time (thông báo) cho tất cả thành viên khác
                 others.forEach(m -> {
                         m.setUnreadCount(m.getUnreadCount() + 1);
                         memberRepository.save(m);

@@ -170,9 +170,8 @@ export const FloatingChatWindow = ({ roomId }: { roomId: number }) => {
   const avatar = roomInfo.avatarUrl || `https://api.dicebear.com/7.x/initials/svg?seed=${displayName}`;
 
   // Feature 4: Real-time online dot
-  // Lấy username của người chat cùng (không phải displayName)
-  const otherMember = members?.find(m => m.username !== currentUser?.username);
-  const online = roomInfo.roomType === 'PRIVATE' && otherMember ? isOnline(otherMember.username) : false;
+  // Lấy username của người chat cùng từ roomInfo (chính xác hơn members vì load ngay lập tức)
+  const online = roomInfo.roomType === 'PRIVATE' && roomInfo.otherUsername ? isOnline(roomInfo.otherUsername) : false;
 
   return (
     <div className="w-[330px] h-[450px] bg-[var(--color-bg-primary)] border border-[var(--color-border-light)] rounded-t-xl shadow-2xl flex flex-col pointer-events-auto overflow-hidden">
