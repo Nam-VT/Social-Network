@@ -16,6 +16,9 @@ spring:
       max-file-size: 50MB
       max-request-size: 100MB
 
+server:
+  forward-headers-strategy: framework
+
   # Kafka Configuration (chạy local trên cùng VM, không cần SASL_SSL)
   kafka:
     bootstrap-servers: ${KAFKA_URL:localhost:9092}
