@@ -16,9 +16,6 @@ spring:
       max-file-size: 50MB
       max-request-size: 100MB
 
-server:
-  forward-headers-strategy: framework
-
   # Kafka Configuration (chạy local trên cùng VM, không cần SASL_SSL)
   kafka:
     bootstrap-servers: ${KAFKA_URL:localhost:9092}
@@ -72,3 +69,6 @@ spring.mail.username: ${SMTP_USERNAME:noreply@social-network.local}
 spring.mail.password: ${SMTP_PASSWORD:password}
 spring.mail.properties.mail.smtp.auth: false
 spring.mail.properties.mail.smtp.starttls.enable: false
+
+server:
+  forward-headers-strategy: framework
