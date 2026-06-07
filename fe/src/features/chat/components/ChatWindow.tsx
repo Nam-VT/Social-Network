@@ -11,8 +11,7 @@ import { useChatSocket } from '../hooks/useChatSocket';
 import { useTypingIndicator } from '../hooks/useTypingIndicator';
 import { usePresenceStore } from '@/store/usePresenceStore';
 import { useTimeTick } from '@/hooks/useTimeTick';
-import { formatDistanceToNow } from 'date-fns';
-import { vi } from 'date-fns/locale';
+import { formatLastSeen } from '@/utils/formatLastSeen';
 import { MediaLightbox } from './MediaLightbox';
 
 const MessageSkeleton = () => (
@@ -217,9 +216,7 @@ export const ChatWindow = ({ room, onToggleInfo, onMediaClick }: ChatWindowProps
               const otherUsername = room.otherUsername;
               const lastSeen = otherUsername ? getLastSeen(otherUsername) : undefined;
               if (lastSeen) {
-                try {
-                  return <span className="text-slate-400">Hoạt động {formatDistanceToNow(new Date(lastSeen), { addSuffix: false, locale: vi })} trước</span>;
-                } catch { return <span className="text-slate-400">Ngoại tuyến</span>; }
+                return <span className="text-slate-400">{formatLastSeen(lastSeen)}</span>;
               }
               return <span className="text-slate-400">Ngoại tuyến</span>;
             })()}

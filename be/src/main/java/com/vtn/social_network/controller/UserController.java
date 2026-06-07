@@ -183,6 +183,18 @@ public class UserController {
         }
 
         /**
+         * Lấy danh sách username bạn bè đang online (dùng để hydrate PresenceStore khi FE khởi động).
+         */
+        @GetMapping("/online-friends")
+        public ResponseEntity<ApiResponse<List<String>>> getOnlineFriends(Authentication authentication) {
+                List<String> onlineUsernames = presenceService.getOnlineFriendUsernames(authentication.getName());
+                return ResponseEntity.ok(ApiResponse.<List<String>>builder()
+                                .status(ErrorCode.SUCCESS.getStatus())
+                                .data(onlineUsernames)
+                                .build());
+        }
+
+        /**
          * Lịch sử hoạt động của user (đăng nhập, đổi mật khẩu...).
          */
         @GetMapping("/me/activity-log")

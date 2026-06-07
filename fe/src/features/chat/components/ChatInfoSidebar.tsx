@@ -5,8 +5,7 @@ import { chatApi, type ChatRoom } from '../api/chatApi';
 import { useAuthStore } from '@/store/useAuthStore';
 import { usePresenceStore } from '@/store/usePresenceStore';
 import { useTimeTick } from '@/hooks/useTimeTick';
-import { formatDistanceToNow } from 'date-fns';
-import { vi } from 'date-fns/locale';
+import { formatLastSeen } from '@/utils/formatLastSeen';
 import { Link } from 'react-router-dom';
 
 interface ChatInfoSidebarProps {
@@ -67,11 +66,7 @@ export const ChatInfoSidebar = ({ room, onClose, onMediaClick }: ChatInfoSidebar
               const online = room.otherUsername ? isOnline(room.otherUsername) : false;
               if (online) return 'Đang hoạt động';
               const lastSeen = room.otherUsername ? getLastSeen(room.otherUsername) : undefined;
-              if (lastSeen) {
-                try {
-                  return `Hoạt động ${formatDistanceToNow(new Date(lastSeen), { addSuffix: false, locale: vi })} trước`;
-                } catch { return 'Ngoại tuyến'; }
-              }
+              if (lastSeen) return formatLastSeen(lastSeen);
               return 'Ngoại tuyến';
             })()}
           </p>

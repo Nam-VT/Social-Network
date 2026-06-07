@@ -2,9 +2,11 @@ import { useEffect, useRef } from 'react';
 import { Client } from '@stomp/stompjs';
 import { useAuthStore } from '@/store/useAuthStore';
 import { usePresenceStore } from '@/store/usePresenceStore';
+import axiosClient from '@/api/axiosClient';
 
 /**
  * Hook lắng nghe /topic/presence để cập nhật trạng thái online/offline real-time.
+ * Khi kết nối thành công, fetch danh sách bạn bè online hiện tại để hydrate store.
  * Đặt ở AppLayout để luôn hoạt động dù đang ở màn hình nào.
  */
 export const usePresenceSocket = () => {
@@ -16,6 +18,16 @@ export const usePresenceSocket = () => {
 
   useEffect(() => {
     if (!token || !user) return;
+
+    // Hydrate: Fetch danh sách bạn bè đang online ngay khi mount
+    axiosClient
+      .get('/users/online-friends')
+      .then((res) => {
+        const onlineUsernames: string[] = res.data.data || [];
+        onlineUsernames.forEach((username) => setOnline(username));
+        console.log('[PresenceWS] Hydrated', onlineUsernames.length, 'online friends');
+      })
+      .catch((err) => console.warn('[PresenceWS] Failed to hydrate online friends:', err));
 
     const client = new Client({
       brokerURL: import.meta.env.VITE_WS_URL || `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/ws`,

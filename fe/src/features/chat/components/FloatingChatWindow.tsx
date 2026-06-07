@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { X, Phone, Video } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { vi } from 'date-fns/locale';
+import { formatLastSeen } from '@/utils/formatLastSeen';
 import { useQuery, useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { chatApi, type ChatMessage, type ChatMember } from '@/features/chat/api/chatApi';
@@ -196,11 +197,7 @@ export const FloatingChatWindow = ({ roomId }: { roomId: number }) => {
               {roomInfo.roomType === 'GROUP' ? `${roomInfo.memberCount || members?.length || 0} thành viên` : online ? 'Đang hoạt động' : (() => {
                 const otherUsername = roomInfo.otherUsername;
                 const lastSeen = otherUsername ? getLastSeen(otherUsername) : undefined;
-                if (lastSeen) {
-                  try {
-                    return `Hoạt động ${formatDistanceToNow(new Date(lastSeen), { addSuffix: false, locale: vi })} trước`;
-                  } catch { return 'Ngoại tuyến'; }
-                }
+                if (lastSeen) return formatLastSeen(lastSeen);
                 return 'Ngoại tuyến';
               })()}
             </span>

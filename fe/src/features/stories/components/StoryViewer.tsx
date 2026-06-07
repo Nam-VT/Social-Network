@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { X, ChevronLeft, ChevronRight, Send, MoreHorizontal, Volume2, VolumeX, Eye, ChevronUp } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { formatLastSeen } from '@/utils/formatLastSeen';
 import { storyApi } from '../api/storyApi';
 import { useAuthStore } from '../../../store/useAuthStore';
 import type { StoryGroupResponse, StoryResponse } from '../types';
@@ -213,7 +214,7 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({
             <div className="text-white drop-shadow-md">
               <p className="font-semibold text-sm">{currentGroup.userFullName}</p>
               <p className="text-xs text-gray-300">
-                {new Date(currentStory.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                {formatLastSeen(currentStory.createdAt)}
               </p>
             </div>
           </div>
@@ -299,12 +300,11 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({
                     />
                     <div className="flex-1 min-w-0">
                       <p className="text-white text-sm font-medium truncate">{v.userFullName}</p>
-                      <p className="text-gray-400 text-xs">
-                        {new Date(v.viewedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </p>
                     </div>
-                    {v.reactionType && (
-                      <span className="text-lg">{REACTION_EMOJI[v.reactionType] || '👍'}</span>
+                    {v.reactionType ? (
+                      <span className="text-xl">{REACTION_EMOJI[v.reactionType] || '👍'}</span>
+                    ) : (
+                      <span className="text-xs text-gray-400">Đã xem</span>
                     )}
                   </div>
                 ))

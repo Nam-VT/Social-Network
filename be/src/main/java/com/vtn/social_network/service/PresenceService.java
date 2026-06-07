@@ -1,6 +1,7 @@
 package com.vtn.social_network.service;
 
 import com.vtn.social_network.entity.User;
+import com.vtn.social_network.repository.FriendshipRepository;
 import com.vtn.social_network.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -18,16 +19,19 @@ public class PresenceService {
     private final UserRepository userRepository;
     private final com.vtn.social_network.repository.MemberRepository memberRepository;
     private final com.vtn.social_network.repository.ChatRoomRepository chatRoomRepository;
+    private final FriendshipRepository friendshipRepository;
     private final SimpMessagingTemplate messagingTemplate;
     private final Map<String, LocalDateTime> onlineUsers = new ConcurrentHashMap<>();
 
     public PresenceService(UserRepository userRepository,
             com.vtn.social_network.repository.MemberRepository memberRepository,
             com.vtn.social_network.repository.ChatRoomRepository chatRoomRepository,
+            FriendshipRepository friendshipRepository,
             SimpMessagingTemplate messagingTemplate) {
         this.userRepository = userRepository;
         this.memberRepository = memberRepository;
         this.chatRoomRepository = chatRoomRepository;
+        this.friendshipRepository = friendshipRepository;
         this.messagingTemplate = messagingTemplate;
     }
 
@@ -73,5 +77,20 @@ public class PresenceService {
         return userRepository.findByUsername(username)
                 .map(User::getLastSeenAt)
                 .orElse(null);
+    }
+
+    /**
+     * Trả về danh sách username bạn bè đang online của user hiện tại.
+     */
+    public java.util.List<String> getOnlineFriendUsernames(String currentUsername) {
+        User user = userRepository.findByUsername(currentUsername)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        java.util.Set<Long> friendIds = friendshipRepository.findFriendIdsByUserId(user.getId());
+        return friendIds.stream()
+                .map(id -> userRepository.findById(id).orElse(null))
+                .filter(java.util.Objects::nonNull)
+                .filter(u -> isUserOnline(u.getUsername()))
+                .map(User::getUsername)
+                .collect(java.util.stream.Collectors.toList());
     }
 }
