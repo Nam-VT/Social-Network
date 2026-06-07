@@ -136,14 +136,14 @@ export const FriendsPage = () => {
         <button
           onClick={() => acceptMutation.mutate(req.id)}
           disabled={acceptMutation.isPending || rejectMutation.isPending}
-          className="w-full bg-[var(--color-accent)] hover:opacity-90 text-white font-semibold py-2 rounded-xl text-sm transition disabled:opacity-50 flex items-center justify-center gap-1.5 whitespace-nowrap"
+          className="w-full bg-[var(--color-accent)] hover:opacity-90 text-white font-semibold py-2 px-1 rounded-xl text-xs sm:text-sm transition disabled:opacity-50 flex items-center justify-center gap-1 sm:gap-1.5 whitespace-nowrap overflow-hidden"
         >
           <Check size={15} /> Chấp nhận
         </button>
         <button
           onClick={() => rejectMutation.mutate(req.id)}
           disabled={acceptMutation.isPending || rejectMutation.isPending}
-          className="w-full bg-[var(--color-bg-elevated)] hover:bg-[var(--color-bg-hover)] text-[var(--color-text-primary)] font-semibold py-2 rounded-xl text-sm transition disabled:opacity-50 flex items-center justify-center gap-1.5 border border-[var(--color-border-light)] whitespace-nowrap"
+          className="w-full bg-[var(--color-bg-elevated)] hover:bg-[var(--color-bg-hover)] text-[var(--color-text-primary)] font-semibold py-2 px-1 rounded-xl text-xs sm:text-sm transition disabled:opacity-50 flex items-center justify-center gap-1 sm:gap-1.5 border border-[var(--color-border-light)] whitespace-nowrap overflow-hidden"
         >
           <X size={15} /> Xóa
         </button>
@@ -175,7 +175,7 @@ export const FriendsPage = () => {
         <button
           onClick={() => cancelMutation.mutate(req.id)}
           disabled={cancelMutation.isPending}
-          className="w-full bg-[var(--color-bg-elevated)] hover:bg-red-50 text-red-500 hover:text-red-600 border border-[var(--color-border-light)] hover:border-red-200 font-semibold py-2 rounded-xl text-sm transition disabled:opacity-50 flex items-center justify-center gap-1.5 whitespace-nowrap"
+          className="w-full bg-[var(--color-bg-elevated)] hover:bg-red-50 text-red-500 hover:text-red-600 border border-[var(--color-border-light)] hover:border-red-200 font-semibold py-2 px-1 rounded-xl text-xs sm:text-sm transition disabled:opacity-50 flex items-center justify-center gap-1 sm:gap-1.5 whitespace-nowrap overflow-hidden"
         >
           <X size={15} /> Hủy lời mời
         </button>
@@ -209,7 +209,7 @@ export const FriendsPage = () => {
         <button
           onClick={() => addFriendMutation.mutate(u.id)}
           disabled={addFriendMutation.isPending}
-          className="w-full bg-[var(--color-accent)]/10 hover:bg-[var(--color-accent)]/20 text-[var(--color-accent)] font-semibold py-2 rounded-xl text-sm transition disabled:opacity-50 flex items-center justify-center gap-1.5 whitespace-nowrap"
+          className="w-full bg-[var(--color-accent)]/10 hover:bg-[var(--color-accent)]/20 text-[var(--color-accent)] font-semibold py-2 px-1 rounded-xl text-xs sm:text-sm transition disabled:opacity-50 flex items-center justify-center gap-1 sm:gap-1.5 whitespace-nowrap overflow-hidden"
         >
           <UserPlus size={15} /> Thêm bạn bè
         </button>
@@ -243,7 +243,7 @@ export const FriendsPage = () => {
             }
           }}
           disabled={unfriendMutation.isPending}
-          className="w-full bg-[var(--color-bg-elevated)] hover:bg-red-50 text-[var(--color-text-primary)] hover:text-red-600 border border-[var(--color-border-light)] hover:border-red-200 font-semibold py-2 rounded-xl text-sm transition disabled:opacity-50 flex items-center justify-center gap-1.5 whitespace-nowrap"
+          className="w-full bg-[var(--color-bg-elevated)] hover:bg-red-50 text-[var(--color-text-primary)] hover:text-red-600 border border-[var(--color-border-light)] hover:border-red-200 font-semibold py-2 px-1 rounded-xl text-xs sm:text-sm transition disabled:opacity-50 flex items-center justify-center gap-1 sm:gap-1.5 whitespace-nowrap overflow-hidden"
         >
           <UserCheck size={15} /> Bạn bè
         </button>
