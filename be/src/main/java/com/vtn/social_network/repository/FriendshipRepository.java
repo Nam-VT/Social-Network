@@ -35,11 +35,11 @@ public interface FriendshipRepository extends JpaRepository<Friendship, Long> {
             @Param("status") FriendshipStatus status,
             Pageable pageable);
 
-    @Query("SELECT u FROM User u WHERE u IN (" +
-           "  SELECT CASE WHEN f1.requester = :u1 THEN f1.addressee ELSE f1.requester END " +
+    @Query("SELECT u FROM User u WHERE u.id IN (" +
+           "  SELECT CASE WHEN f1.requester = :u1 THEN f1.addressee.id ELSE f1.requester.id END " +
            "  FROM Friendship f1 WHERE (f1.requester = :u1 OR f1.addressee = :u1) AND f1.status = 'ACCEPTED'" +
-           ") AND u IN (" +
-           "  SELECT CASE WHEN f2.requester = :u2 THEN f2.addressee ELSE f2.requester END " +
+           ") AND u.id IN (" +
+           "  SELECT CASE WHEN f2.requester = :u2 THEN f2.addressee.id ELSE f2.requester.id END " +
            "  FROM Friendship f2 WHERE (f2.requester = :u2 OR f2.addressee = :u2) AND f2.status = 'ACCEPTED'" +
            ")")
     List<User> findMutualFriends(@Param("u1") User u1, @Param("u2") User u2, Pageable pageable);
