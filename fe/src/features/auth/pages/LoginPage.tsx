@@ -17,7 +17,11 @@ export const LoginPage = () => {
     onSuccess: (data) => {
       // Lưu user và token vào Zustand + LocalStorage
       setAuth(data.user, data.token);
-      navigate('/');
+      if (data.user.role === 'ADMIN') {
+        navigate('/admin');
+      } else {
+        navigate('/');
+      }
     },
     onError: (error: any) => {
       setErrorMsg(error.response?.data?.message || 'Đăng nhập thất bại. Vui lòng thử lại!');

@@ -34,7 +34,11 @@ export const OAuth2CallbackPage = () => {
       .then((res) => {
         const user = res.data.data;
         setAuth(user, token);
-        navigate('/', { replace: true });
+        if (user.role === 'ADMIN') {
+          navigate('/admin', { replace: true });
+        } else {
+          navigate('/', { replace: true });
+        }
       })
       .catch(() => {
         navigate('/login', { replace: true });
