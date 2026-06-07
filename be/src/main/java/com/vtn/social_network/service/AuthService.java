@@ -60,7 +60,7 @@ public class AuthService {
                 .email(user.getEmail())
                 .fullName(user.getFullName())
                 .avatarUrl(user.getAvatarUrl())
-                .role(user.getRole().name())
+                .role(user.getRole() != null ? user.getRole().name() : com.vtn.social_network.enums.UserRole.USER.name())
                 .build();
 
         AuthResponse response = new AuthResponse();
@@ -209,7 +209,7 @@ public class AuthService {
                 .email(user.getEmail())
                 .fullName(user.getFullName())
                 .avatarUrl(user.getAvatarUrl())
-                .role(user.getRole().name())
+                .role(user.getRole() != null ? user.getRole().name() : com.vtn.social_network.enums.UserRole.USER.name())
                 .build();
 
         AuthResponse response = new AuthResponse();

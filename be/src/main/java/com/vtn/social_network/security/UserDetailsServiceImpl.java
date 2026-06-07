@@ -27,9 +27,10 @@ public class UserDetailsServiceImpl implements UserDetailsService {
             throw new RuntimeException("User account is not active");
         }
 
+        String roleName = user.getRole() != null ? user.getRole().name() : com.vtn.social_network.enums.UserRole.USER.name();
         return new org.springframework.security.core.userdetails.User(
                 user.getUsername(),
                 user.getPassword(),
-                Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + user.getRole().name())));
+                Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + roleName)));
     }
 }
