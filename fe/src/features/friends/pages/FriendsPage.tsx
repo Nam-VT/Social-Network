@@ -136,14 +136,14 @@ export const FriendsPage = () => {
         <button
           onClick={() => acceptMutation.mutate(req.id)}
           disabled={acceptMutation.isPending || rejectMutation.isPending}
-          className="w-full bg-[var(--color-accent)] hover:opacity-90 text-white font-semibold py-2 rounded-xl text-sm transition disabled:opacity-50 flex items-center justify-center gap-1.5"
+          className="w-full bg-[var(--color-accent)] hover:opacity-90 text-white font-semibold py-2 rounded-xl text-sm transition disabled:opacity-50 flex items-center justify-center gap-1.5 whitespace-nowrap"
         >
           <Check size={15} /> Chấp nhận
         </button>
         <button
           onClick={() => rejectMutation.mutate(req.id)}
           disabled={acceptMutation.isPending || rejectMutation.isPending}
-          className="w-full bg-[var(--color-bg-elevated)] hover:bg-[var(--color-bg-hover)] text-[var(--color-text-primary)] font-semibold py-2 rounded-xl text-sm transition disabled:opacity-50 flex items-center justify-center gap-1.5 border border-[var(--color-border-light)]"
+          className="w-full bg-[var(--color-bg-elevated)] hover:bg-[var(--color-bg-hover)] text-[var(--color-text-primary)] font-semibold py-2 rounded-xl text-sm transition disabled:opacity-50 flex items-center justify-center gap-1.5 border border-[var(--color-border-light)] whitespace-nowrap"
         >
           <X size={15} /> Xóa
         </button>
@@ -175,7 +175,7 @@ export const FriendsPage = () => {
         <button
           onClick={() => cancelMutation.mutate(req.id)}
           disabled={cancelMutation.isPending}
-          className="w-full bg-[var(--color-bg-elevated)] hover:bg-red-50 text-red-500 hover:text-red-600 border border-[var(--color-border-light)] hover:border-red-200 font-semibold py-2 rounded-xl text-sm transition disabled:opacity-50 flex items-center justify-center gap-1.5"
+          className="w-full bg-[var(--color-bg-elevated)] hover:bg-red-50 text-red-500 hover:text-red-600 border border-[var(--color-border-light)] hover:border-red-200 font-semibold py-2 rounded-xl text-sm transition disabled:opacity-50 flex items-center justify-center gap-1.5 whitespace-nowrap"
         >
           <X size={15} /> Hủy lời mời
         </button>
@@ -209,7 +209,7 @@ export const FriendsPage = () => {
         <button
           onClick={() => addFriendMutation.mutate(u.id)}
           disabled={addFriendMutation.isPending}
-          className="w-full bg-[var(--color-accent)]/10 hover:bg-[var(--color-accent)]/20 text-[var(--color-accent)] font-semibold py-2 rounded-xl text-sm transition disabled:opacity-50 flex items-center justify-center gap-1.5"
+          className="w-full bg-[var(--color-accent)]/10 hover:bg-[var(--color-accent)]/20 text-[var(--color-accent)] font-semibold py-2 rounded-xl text-sm transition disabled:opacity-50 flex items-center justify-center gap-1.5 whitespace-nowrap"
         >
           <UserPlus size={15} /> Thêm bạn bè
         </button>
@@ -243,7 +243,7 @@ export const FriendsPage = () => {
             }
           }}
           disabled={unfriendMutation.isPending}
-          className="w-full bg-[var(--color-bg-elevated)] hover:bg-red-50 text-[var(--color-text-primary)] hover:text-red-600 border border-[var(--color-border-light)] hover:border-red-200 font-semibold py-2 rounded-xl text-sm transition disabled:opacity-50 flex items-center justify-center gap-1.5"
+          className="w-full bg-[var(--color-bg-elevated)] hover:bg-red-50 text-[var(--color-text-primary)] hover:text-red-600 border border-[var(--color-border-light)] hover:border-red-200 font-semibold py-2 rounded-xl text-sm transition disabled:opacity-50 flex items-center justify-center gap-1.5 whitespace-nowrap"
         >
           <UserCheck size={15} /> Bạn bè
         </button>
@@ -294,7 +294,7 @@ export const FriendsPage = () => {
             <p className="text-sm font-semibold text-[var(--color-text-secondary)] mb-4">
               {pendingCount > 0 ? `${pendingCount} lời mời kết bạn` : ''}
             </p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
               {loadingReceived
                 ? renderLoader()
                 : (received as any[]).length > 0
@@ -310,7 +310,7 @@ export const FriendsPage = () => {
             <p className="text-sm font-semibold text-[var(--color-text-secondary)] mb-4">
               {(sent as any[]).length > 0 ? `${(sent as any[]).length} lời mời đang chờ` : ''}
             </p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
               {loadingSent
                 ? renderLoader()
                 : (sent as any[]).length > 0
@@ -326,7 +326,7 @@ export const FriendsPage = () => {
             <p className="text-sm font-semibold text-[var(--color-text-secondary)] mb-4">
               Những người bạn có thể biết
             </p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
               {loadingSuggestions
                 ? renderLoader()
                 : (suggestions as any[]).length > 0
@@ -342,7 +342,7 @@ export const FriendsPage = () => {
             <p className="text-sm font-semibold text-[var(--color-text-secondary)] mb-4">
               {allFriends.length > 0 ? `${allFriends.length} người bạn` : ''}
             </p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
               {loadingAll
                 ? renderLoader()
                 : allFriends.length > 0
