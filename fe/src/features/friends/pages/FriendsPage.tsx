@@ -267,7 +267,7 @@ export const FriendsPage = () => {
           <button
             key={key}
             onClick={() => setActiveTab(key)}
-            className={`relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all flex-1 justify-center ${
+            className={`relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all flex-1 justify-center whitespace-nowrap ${
               activeTab === key
                 ? 'bg-[var(--color-accent)] text-white shadow-sm'
                 : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-hover)]'
