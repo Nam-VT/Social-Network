@@ -112,8 +112,10 @@ public class PostService {
     public PostResponse updatePost(String username, Long postId, UpdatePostRequest request) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException(ErrorCode.POST_NOT_FOUND.getMessage()));
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException(ErrorCode.USER_NOT_FOUND.getMessage()));
 
-        if (!post.getUser().getUsername().equals(username)) {
+        if (!post.getUser().getUsername().equals(username) && user.getRole() != UserRole.ADMIN) {
             throw new RuntimeException(ErrorCode.UNAUTHORIZED.getMessage());
         }
 
@@ -130,17 +132,17 @@ public class PostService {
         searchIndexingService.indexPostDirect(post);
         log.info("User {} đã cập nhật bài viết id={}", username, postId);
 
-        User currentUser = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException(ErrorCode.USER_NOT_FOUND.getMessage()));
-        return toPostResponse(post, currentUser);
+        return toPostResponse(post, user);
     }
 
     @Transactional
     public void deletePost(String username, Long postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException(ErrorCode.POST_NOT_FOUND.getMessage()));
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException(ErrorCode.USER_NOT_FOUND.getMessage()));
 
-        if (!post.getUser().getUsername().equals(username)) {
+        if (!post.getUser().getUsername().equals(username) && user.getRole() != UserRole.ADMIN) {
             throw new RuntimeException(ErrorCode.UNAUTHORIZED.getMessage());
         }
 

@@ -22,7 +22,7 @@ export const Rightbar = () => {
 
   // Fetch danh sách bạn bè thật từ API
   const { data: friendsData, isLoading: isLoadingFriends } = useQuery({
-    queryKey: ['my-friends-list'],
+    queryKey: ['profile-friends', currentUser?.username],
     queryFn: () => profileApi.getUserFriends(currentUser?.username || '', 0, 20),
     enabled: !!currentUser?.username,
     staleTime: 2 * 60 * 1000,

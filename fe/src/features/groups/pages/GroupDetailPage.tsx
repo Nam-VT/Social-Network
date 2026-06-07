@@ -228,9 +228,9 @@ export const GroupDetailPage = () => {
 
   const isCreator = currentUser?.username === group.creatorUsername;
   const isPrivate = group.privacy === 'PRIVATE';
-  const isApprovedMember = group.isApprovedMember === true;  // Đã được duyệt vào nhóm
-  const isPendingMember = group.isMember === true && !isApprovedMember; // Đang chờ duyệt
-  const isAdmin = isCreator && isApprovedMember; // Admin phải là creator VÀ đã được duyệt
+  const isApprovedMember = group.isApprovedMember === true || currentUser?.role === 'ADMIN';
+  const isPendingMember = group.isMember === true && !group.isApprovedMember;
+  const isAdmin = (isCreator && group.isApprovedMember === true) || currentUser?.role === 'ADMIN';
 
   return (
     <div className="w-full max-w-[800px] mx-auto p-4 space-y-6">

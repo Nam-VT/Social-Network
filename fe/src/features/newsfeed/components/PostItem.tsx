@@ -171,7 +171,7 @@ export const PostItem = ({ post, defaultShowComments = false, onDeleted }: PostP
   // Feature: Read More
   const [isExpanded, setIsExpanded] = useState(false);
   
-  const isMyPost = user?.id === post.authorId;
+  const isMyPost = user?.id === post.authorId || user?.role === 'ADMIN';
 
   const handleCopyLink = () => {
     const url = `${window.location.origin}/post/${post.id}`;

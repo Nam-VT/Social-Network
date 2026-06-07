@@ -325,6 +325,7 @@ public class SocialGroupService {
     }
 
     private void requireAdmin(SocialGroup group, User user) {
+        if (user.getRole() == UserRole.ADMIN) return;
         GroupMember member = groupMemberRepository.findByGroupAndUser(group, user)
                 .orElseThrow(() -> new RuntimeException("Bạn không phải thành viên nhóm"));
         if (member.getRole() != MemberRole.ADMIN) {
@@ -333,6 +334,7 @@ public class SocialGroupService {
     }
 
     private void requireAdminOrMod(SocialGroup group, User user) {
+        if (user.getRole() == UserRole.ADMIN) return;
         GroupMember member = groupMemberRepository.findByGroupAndUser(group, user)
                 .orElseThrow(() -> new RuntimeException("Bạn không phải thành viên nhóm"));
         if (member.getRole() != MemberRole.ADMIN && member.getRole() != MemberRole.MODERATOR) {
