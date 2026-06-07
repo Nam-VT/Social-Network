@@ -24,6 +24,7 @@ export const useAuthSync = () => {
     if (!freshUser) return;
     // Map dữ liệu từ UserProfileResponse về User entity
     const updated = {
+      ...(user || {}),
       id: freshUser.id ?? user?.id,
       username: freshUser.username ?? user?.username,
       email: freshUser.email ?? user?.email,
@@ -31,6 +32,6 @@ export const useAuthSync = () => {
       fullName: freshUser.fullName,
       status: 'ONLINE' as const,
     };
-    updateUser(updated);
+    updateUser(updated as any);
   }, [freshUser]);
 };
