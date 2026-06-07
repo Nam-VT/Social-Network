@@ -25,9 +25,12 @@ export const OAuth2CallbackPage = () => {
     // Lưu token trước để có thể gọi API
     localStorage.setItem('token', token);
 
-    // Gọi API lấy thông tin user từ token
+    // Gọi API lấy thông tin user từ token. Phải truyền header tường minh vì lúc này 
+    // Zustand store chưa có token (interceptor sẽ không tự gắn được).
     axiosClient
-      .get('/users/me')
+      .get('/users/me', {
+        headers: { Authorization: `Bearer ${token}` }
+      })
       .then((res) => {
         const user = res.data.data;
         setAuth(user, token);
