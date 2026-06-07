@@ -1,14 +1,23 @@
 import { NavLink } from 'react-router-dom';
-import { Home, User, MessageSquare, Users, Bookmark } from 'lucide-react';
+import { Home, User, MessageSquare, Users, Bookmark, UserPlus } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
+import { useQuery } from '@tanstack/react-query';
+import { profileApi } from '@/features/profile/api/profileApi';
 import '@/styles/layout/sidebar.css';
 
 export const Sidebar = () => {
   const user = useAuthStore(state => state.user);
 
+  const { data: pendingRequests = [] } = useQuery({
+    queryKey: ['friend-requests'],
+    queryFn: () => profileApi.getPendingRequests(),
+  });
+  const pendingCount = (pendingRequests as any[]).length;
+
   const MENU_ITEMS = [
     { path: '/', label: 'Trang chủ', icon: Home },
     { path: '/profile', label: 'Trang cá nhân', icon: User },
+    { path: '/friends', label: 'Bạn bè', icon: UserPlus, badge: pendingCount },
     { path: '/chat', label: 'Tin nhắn', icon: MessageSquare },
     { path: '/groups', label: 'Hội nhóm', icon: Users },
     { path: '/saved', label: 'Đã lưu', icon: Bookmark },
@@ -27,7 +36,14 @@ export const Sidebar = () => {
                 `sidebar-menu-item ${isActive ? 'active' : ''}`
               }
             >
-              <Icon className="sidebar-icon" />
+            <div className="relative inline-flex">
+                <Icon className="sidebar-icon" />
+                {(item as any).badge > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-0.5 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+                    {(item as any).badge > 9 ? '9+' : (item as any).badge}
+                  </span>
+                )}
+              </div>
               <span>{item.label}</span>
             </NavLink>
           );

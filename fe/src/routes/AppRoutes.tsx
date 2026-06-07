@@ -18,6 +18,7 @@ import { AdminUsersPage } from '@/features/admin/pages/AdminUsersPage';
 import { AdminReportsPage } from '@/features/admin/pages/AdminReportsPage';
 import { AdminAuditLogsPage } from '@/features/admin/pages/AdminAuditLogsPage';
 import { OAuth2CallbackPage } from '@/features/auth/pages/OAuth2CallbackPage';
+import { FriendsPage } from '@/features/friends/pages/FriendsPage';
 
 export const AppRoutes = () => {
   return (
@@ -45,6 +46,7 @@ export const AppRoutes = () => {
           <Route path="/chat/:roomId" element={<ChatPage />} />
           <Route path="/search" element={<SearchPage />} />
           <Route path="/hashtag/:tag" element={<HashtagPage />} />
+          <Route path="/friends" element={<FriendsPage />} />
         </Route>
 
         {/* Admin Routes (Được bảo vệ bằng role ADMIN trong AdminLayout) */}
