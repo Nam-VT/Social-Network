@@ -163,6 +163,7 @@ public class UserService {
                 .gender(target.getGender())
                 .relationshipStatus(target.getRelationshipStatus() != null ? target.getRelationshipStatus().name() : null)
                 .friendListVisibility(target.getFriendListVisibility())
+                .role(target.getRole())
                 .createdAt(target.getCreatedAt())
                 // computed
                 .friendshipStatus(friendshipStatus)

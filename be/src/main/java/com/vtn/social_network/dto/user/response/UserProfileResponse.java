@@ -1,6 +1,7 @@
 package com.vtn.social_network.dto.user.response;
 
 import com.vtn.social_network.enums.Gender;
+import com.vtn.social_network.enums.UserRole;
 import com.vtn.social_network.enums.Visibility;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -28,6 +29,7 @@ public class UserProfileResponse {
     private Gender gender;
     private String relationshipStatus;
     private Visibility friendListVisibility;
+    private UserRole role;
     private LocalDateTime createdAt;
 
     // === Computed fields (view-dependent) ===
