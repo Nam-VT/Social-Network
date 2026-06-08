@@ -3,6 +3,7 @@ import { Home, User, MessageSquare, Users, Bookmark, UserPlus } from 'lucide-rea
 import { useAuthStore } from '@/store/useAuthStore';
 import { useQuery } from '@tanstack/react-query';
 import { profileApi } from '@/features/profile/api/profileApi';
+import { chatApi } from '@/features/chat/api/chatApi';
 import '@/styles/layout/sidebar.css';
 
 export const Sidebar = () => {
@@ -14,11 +15,18 @@ export const Sidebar = () => {
   });
   const pendingCount = (pendingRequests as any[]).length;
 
+  const { data: unreadMessages = 0 } = useQuery({
+    queryKey: ['chat-unread-count'],
+    queryFn: chatApi.getUnreadCount,
+    refetchInterval: 30000,
+    enabled: !!user,
+  });
+
   const MENU_ITEMS = [
     { path: '/', label: 'Trang chủ', icon: Home },
     { path: '/profile', label: 'Trang cá nhân', icon: User },
     { path: '/friends', label: 'Bạn bè', icon: UserPlus, badge: pendingCount },
-    { path: '/chat', label: 'Tin nhắn', icon: MessageSquare },
+    { path: '/chat', label: 'Tin nhắn', icon: MessageSquare, badge: unreadMessages as number },
     { path: '/groups', label: 'Hội nhóm', icon: Users },
     { path: '/saved', label: 'Đã lưu', icon: Bookmark },
   ];
@@ -32,6 +40,7 @@ export const Sidebar = () => {
             <NavLink
               key={item.path}
               to={item.path}
+              end={item.path === '/'}
               className={({ isActive }) => 
                 `sidebar-menu-item ${isActive ? 'active' : ''}`
               }
@@ -52,7 +61,6 @@ export const Sidebar = () => {
 
       <div className="sidebar-divider"></div>
 
-      {/* Footer links placeholder */}
       <div className="sidebar-footer">
         <div className="sidebar-footer-links">
           <a href="#">Quyền riêng tư</a>

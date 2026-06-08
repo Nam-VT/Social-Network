@@ -3,6 +3,7 @@ import { PrivateRoute } from './PrivateRoute';
 import { PublicRoute } from './PublicRoute';
 import { LoginPage } from '@/features/auth/pages/LoginPage';
 import { RegisterPage } from '@/features/auth/pages/RegisterPage';
+import { SettingsPage } from '@/features/auth/pages/SettingsPage';
 import { AppLayout } from '@/components/Layout/AppLayout';
 import { NewsfeedPage } from '@/features/newsfeed/pages/NewsfeedPage';
 import { PostDetailPage } from '@/features/newsfeed/pages/PostDetailPage';
@@ -15,6 +16,8 @@ import { HashtagPage } from '@/features/search/pages/HashtagPage';
 import { AdminLayout } from '@/features/admin/components/AdminLayout';
 import { AdminDashboardPage } from '@/features/admin/pages/AdminDashboardPage';
 import { AdminUsersPage } from '@/features/admin/pages/AdminUsersPage';
+import { AdminPostsPage } from '@/features/admin/pages/AdminPostsPage';
+import { AdminGroupsPage } from '@/features/admin/pages/AdminGroupsPage';
 import { AdminReportsPage } from '@/features/admin/pages/AdminReportsPage';
 import { AdminAuditLogsPage } from '@/features/admin/pages/AdminAuditLogsPage';
 import { OAuth2CallbackPage } from '@/features/auth/pages/OAuth2CallbackPage';
@@ -47,12 +50,15 @@ export const AppRoutes = () => {
           <Route path="/search" element={<SearchPage />} />
           <Route path="/hashtag/:tag" element={<HashtagPage />} />
           <Route path="/friends" element={<FriendsPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
         </Route>
 
         {/* Admin Routes (Được bảo vệ bằng role ADMIN trong AdminLayout) */}
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboardPage />} />
           <Route path="users" element={<AdminUsersPage />} />
+          <Route path="posts" element={<AdminPostsPage />} />
+          <Route path="groups" element={<AdminGroupsPage />} />
           <Route path="reports" element={<AdminReportsPage />} />
           <Route path="logs" element={<AdminAuditLogsPage />} />
         </Route>

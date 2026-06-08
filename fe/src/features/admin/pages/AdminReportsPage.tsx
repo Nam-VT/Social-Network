@@ -2,12 +2,15 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { adminApi, reportApi } from '../api/adminApi';
 import { Trash2, CheckCircle, XCircle, AlertTriangle, ExternalLink } from 'lucide-react';
+import { toast } from '@/components/ui/Toast';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 
 export const AdminReportsPage: React.FC = () => {
   const [page, setPage] = useState(0);
   const [filterStatus, setFilterStatus] = useState<string>('PENDING');
   const size = 10;
   const queryClient = useQueryClient();
+  const [confirmDeletePost, setConfirmDeletePost] = useState<number | null>(null);
 
   const { data: reportsPage, isLoading } = useQuery({
     queryKey: ['admin', 'reports', filterStatus, page],
@@ -18,28 +21,29 @@ export const AdminReportsPage: React.FC = () => {
   const updateStatusMutation = useMutation({
     mutationFn: ({ id, status }: { id: number, status: 'RESOLVED' | 'DISMISSED' }) => 
       reportApi.updateReportStatus(id, status),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin', 'reports'] }),
+    onSuccess: (_, vars) => {
+      toast.success(vars.status === 'RESOLVED' ? 'Đã xử lý báo cáo' : 'Đã bỏ qua báo cáo');
+      queryClient.invalidateQueries({ queryKey: ['admin', 'reports'] });
+    },
+    onError: () => toast.error('Không thể cập nhật trạng thái'),
   });
 
   const deletePostMutation = useMutation({
     mutationFn: (postId: number) => adminApi.deletePost(postId),
-    onSuccess: (_, postId) => {
-      alert(`Đã xóa bài viết ID: ${postId} thành công!`);
-      // Sau khi xóa bài, tự động chuyển trạng thái báo cáo về RESOLVED (nếu muốn)
+    onSuccess: () => {
+      toast.success('Đã xóa bài viết thành công');
       queryClient.invalidateQueries({ queryKey: ['admin', 'reports'] });
+      setConfirmDeletePost(null);
     },
+    onError: () => toast.error('Không thể xóa bài viết'),
   });
 
   const handleUpdateStatus = (id: number, status: 'RESOLVED' | 'DISMISSED') => {
-    if (window.confirm(`Bạn có chắc chắn muốn chuyển trạng thái thành ${status}?`)) {
-      updateStatusMutation.mutate({ id, status });
-    }
+    updateStatusMutation.mutate({ id, status });
   };
 
   const handleDeletePost = (postId: number) => {
-    if (window.confirm('CẢNH BÁO: Hành động này sẽ xóa vĩnh viễn bài viết khỏi hệ thống. Tiếp tục?')) {
-      deletePostMutation.mutate(postId);
-    }
+    setConfirmDeletePost(postId);
   };
 
   return (
@@ -182,6 +186,17 @@ export const AdminReportsPage: React.FC = () => {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        isOpen={confirmDeletePost !== null}
+        title="Xóa bài viết vi phạm"
+        message="Hành động này sẽ xóa vĩnh viễn bài viết khỏi hệ thống. Bạn có chắc chắn?"
+        confirmLabel="Xóa ngay"
+        variant="danger"
+        isLoading={deletePostMutation.isPending}
+        onConfirm={() => confirmDeletePost !== null && deletePostMutation.mutate(confirmDeletePost)}
+        onCancel={() => setConfirmDeletePost(null)}
+      />
     </div>
   );
 };

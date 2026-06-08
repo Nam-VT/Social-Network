@@ -68,4 +68,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
         Page<Post> findByGroupAndGroupPostStatusOrderByCreatedAtDesc(SocialGroup group,
                         GroupPostStatus status, Pageable pageable);
+
+        // Admin search
+        Page<Post> findByContentContainingIgnoreCase(String keyword, Pageable pageable);
 }

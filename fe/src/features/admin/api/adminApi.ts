@@ -24,9 +24,25 @@ export const adminApi = {
     return res.data.data;
   },
 
-  // Xóa nóng bài viết
+  // Quản lý Posts
+  getAllPosts: async (keyword?: string, page = 0, size = 15): Promise<PageResponse<any>> => {
+    const res = await axiosClient.get('/admin/posts', { params: { keyword, page, size } });
+    return res.data.data;
+  },
+
   deletePost: async (postId: number): Promise<void> => {
     const res = await axiosClient.delete(`/admin/posts/${postId}`);
+    return res.data.data;
+  },
+
+  // Quản lý Groups
+  getAllGroups: async (keyword?: string, page = 0, size = 15): Promise<PageResponse<any>> => {
+    const res = await axiosClient.get('/admin/groups', { params: { keyword, page, size } });
+    return res.data.data;
+  },
+
+  deleteGroup: async (groupId: number): Promise<void> => {
+    const res = await axiosClient.delete(`/admin/groups/${groupId}`);
     return res.data.data;
   },
 
@@ -38,19 +54,16 @@ export const adminApi = {
 };
 
 export const reportApi = {
-  // Dành cho User tạo báo cáo
   createReport: async (payload: { targetId: number; targetType: string; reason: string; description?: string }) => {
     const res = await axiosClient.post('/reports', payload);
     return res.data.data;
   },
 
-  // Dành cho Admin lấy báo cáo
   getReports: async (status?: string, page = 0, size = 20): Promise<PageResponse<ReportResponse>> => {
     const res = await axiosClient.get('/reports', { params: { status, page, size } });
     return res.data.data;
   },
 
-  // Admin cập nhật báo cáo
   updateReportStatus: async (reportId: number, status: 'RESOLVED' | 'DISMISSED'): Promise<void> => {
     const res = await axiosClient.put(`/reports/${reportId}`, { status });
     return res.data.data;

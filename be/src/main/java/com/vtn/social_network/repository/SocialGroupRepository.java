@@ -9,4 +9,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface SocialGroupRepository extends JpaRepository<SocialGroup, Long> {
     Page<SocialGroup> findByNameContainingIgnoreCaseOrderByMemberCountDesc(String name, Pageable pageable);
+    Page<SocialGroup> findByNameContainingIgnoreCase(String name, Pageable pageable);
 }

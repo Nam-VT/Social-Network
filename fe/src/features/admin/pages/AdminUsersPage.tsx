@@ -2,11 +2,14 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { adminApi } from '../api/adminApi';
 import { Ban, CheckCircle, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { toast } from '@/components/ui/Toast';
 
 export const AdminUsersPage: React.FC = () => {
   const [page, setPage] = useState(0);
   const size = 10;
   const queryClient = useQueryClient();
+  const [confirmBan, setConfirmBan] = useState<{ id: number; status: string } | null>(null);
 
   const { data: usersPage, isLoading } = useQuery({
     queryKey: ['admin', 'users', page],
@@ -16,24 +19,26 @@ export const AdminUsersPage: React.FC = () => {
 
   const banMutation = useMutation({
     mutationFn: (userId: number) => adminApi.banUser(userId),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin', 'users'] }),
+    onSuccess: () => {
+      toast.success('Đã cấm người dùng');
+      queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+      setConfirmBan(null);
+    },
+    onError: () => toast.error('Không thể cấm người dùng này'),
   });
 
   const unbanMutation = useMutation({
     mutationFn: (userId: number) => adminApi.unbanUser(userId),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin', 'users'] }),
+    onSuccess: () => {
+      toast.success('Đã bỏ cấm người dùng');
+      queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+      setConfirmBan(null);
+    },
+    onError: () => toast.error('Không thể bỏ cấm người dùng này'),
   });
 
   const handleToggleBan = (userId: number, currentStatus: string) => {
-    if (currentStatus === 'ACTIVE') {
-      if (window.confirm('Bạn có chắc chắn muốn cấm người dùng này?')) {
-        banMutation.mutate(userId);
-      }
-    } else {
-      if (window.confirm('Bạn có chắc chắn muốn bỏ cấm người dùng này?')) {
-        unbanMutation.mutate(userId);
-      }
-    }
+    setConfirmBan({ id: userId, status: currentStatus });
   };
 
   return (
@@ -140,6 +145,24 @@ export const AdminUsersPage: React.FC = () => {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        isOpen={confirmBan !== null}
+        title={confirmBan?.status === 'ACTIVE' ? 'Cấm người dùng' : 'Bỏ cấm người dùng'}
+        message={confirmBan?.status === 'ACTIVE'
+          ? 'Người dùng này sẽ không thể đăng nhập cho đến khi được bỏ cấm. Bạn có chắc chắn?'
+          : 'Người dùng này sẽ có thể đăng nhập trở lại. Bạn có chắc chắn?'
+        }
+        confirmLabel={confirmBan?.status === 'ACTIVE' ? 'Cấm ngay' : 'Bỏ cấm'}
+        variant={confirmBan?.status === 'ACTIVE' ? 'danger' : 'warning'}
+        isLoading={banMutation.isPending || unbanMutation.isPending}
+        onConfirm={() => {
+          if (!confirmBan) return;
+          if (confirmBan.status === 'ACTIVE') banMutation.mutate(confirmBan.id);
+          else unbanMutation.mutate(confirmBan.id);
+        }}
+        onCancel={() => setConfirmBan(null)}
+      />
     </div>
   );
 };
