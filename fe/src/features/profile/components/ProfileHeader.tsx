@@ -6,6 +6,7 @@ import { chatApi } from '@/features/chat/api/chatApi';
 import { useFloatingChatStore } from '@/store/useFloatingChatStore';
 import { useState } from 'react';
 import { toast } from '@/components/ui/Toast';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 
 interface ProfileHeaderProps {
   profile: UserProfile;
@@ -105,6 +106,7 @@ export const ProfileHeader = ({ profile, isOwnProfile, onEditClick }: ProfileHea
   });
 
   const [showFriendDropdown, setShowFriendDropdown] = useState(false);
+  const [confirmUnfriend, setConfirmUnfriend] = useState(false);
 
   const followMutation = useMutation({
     mutationFn: () => profile.isFollowing ? profileApi.unfollowUser(profile.id) : profileApi.followUser(profile.id),
@@ -158,10 +160,8 @@ export const ProfileHeader = ({ profile, isOwnProfile, onEditClick }: ProfileHea
               <button 
                 className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-slate-50 transition"
                 onClick={() => {
-                  if (window.confirm('Bạn có chắc muốn hủy kết bạn với người này?')) {
-                    unfriendMutation.mutate();
-                    setShowFriendDropdown(false);
-                  }
+                  setConfirmUnfriend(true);
+                  setShowFriendDropdown(false);
                 }}
                 disabled={unfriendMutation.isPending}
               >
@@ -331,6 +331,20 @@ export const ProfileHeader = ({ profile, isOwnProfile, onEditClick }: ProfileHea
           )}
         </div>
       </div>
+
+      <ConfirmDialog
+        isOpen={confirmUnfriend}
+        title="Hủy kết bạn"
+        message={`Bạn có chắc muốn hủy kết bạn với ${profile.fullName || profile.username}?`}
+        confirmLabel="Hủy kết bạn"
+        variant="warning"
+        isLoading={unfriendMutation.isPending}
+        onConfirm={() => {
+          unfriendMutation.mutate();
+          setConfirmUnfriend(false);
+        }}
+        onCancel={() => setConfirmUnfriend(false)}
+      />
     </div>
   );
 };
