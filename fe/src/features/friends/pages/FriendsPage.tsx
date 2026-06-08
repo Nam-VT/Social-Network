@@ -11,9 +11,12 @@ import {
   Loader2,
   UserCheck,
   Sparkles,
+  ChevronDown,
 } from 'lucide-react';
 import { toast } from '@/components/ui/Toast';
 import { useAuthStore } from '@/store/useAuthStore';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { usePageTitle } from '@/hooks/usePageTitle';
 
 type Tab = 'received' | 'sent' | 'suggestions' | 'all';
 
@@ -25,6 +28,7 @@ const TAB_ITEMS: { key: Tab; label: string; icon: React.ElementType }[] = [
 ];
 
 export const FriendsPage = () => {
+  usePageTitle('Bạn bè');
   const [activeTab, setActiveTab] = useState<Tab>('received');
   const queryClient = useQueryClient();
   const user = useAuthStore((s) => s.user);
@@ -47,13 +51,20 @@ export const FriendsPage = () => {
     enabled: activeTab === 'suggestions',
   });
 
+  const [friendsPage, setFriendsPage] = useState(0);
+  const FRIENDS_PAGE_SIZE = 20;
+
   const { data: allFriendsData, isLoading: loadingAll } = useQuery({
-    queryKey: ['profile-friends', user?.username],
-    queryFn: () => profileApi.getUserFriends(user!.username),
+    queryKey: ['profile-friends', user?.username, friendsPage],
+    queryFn: () => profileApi.getUserFriends(user!.username, friendsPage, FRIENDS_PAGE_SIZE),
     enabled: activeTab === 'all' && !!user?.username,
   });
 
-  const allFriends = allFriendsData?.data?.content || [];
+  const allFriends = allFriendsData?.data?.content || allFriendsData?.content || [];
+  const totalFriends = allFriendsData?.data?.totalElements ?? allFriendsData?.totalElements ?? allFriends.length;
+  const hasMoreFriends = allFriends.length === FRIENDS_PAGE_SIZE;
+
+  const [confirmUnfriend, setConfirmUnfriend] = useState<number | null>(null);
 
   const invalidateAll = () => {
     queryClient.invalidateQueries({ queryKey: ['friend-requests'] });
@@ -90,7 +101,7 @@ export const FriendsPage = () => {
 
   const unfriendMutation = useMutation({
     mutationFn: (userId: number) => profileApi.unfriend(userId),
-    onSuccess: () => { invalidateAll(); toast.info('Đã hủy kết bạn'); },
+    onSuccess: () => { invalidateAll(); setConfirmUnfriend(null); toast.info('Đã hủy kết bạn'); },
     onError: () => toast.error('Có lỗi xảy ra'),
   });
 
@@ -237,11 +248,7 @@ export const FriendsPage = () => {
           <p className="text-xs text-[var(--color-text-secondary)] truncate mt-0.5">@{friend.username}</p>
         </div>
         <button
-          onClick={() => {
-            if (window.confirm('Bạn có chắc muốn hủy kết bạn?')) {
-              unfriendMutation.mutate(friend.userId);
-            }
-          }}
+          onClick={() => setConfirmUnfriend(friend.userId)}
           disabled={unfriendMutation.isPending}
           className="w-full bg-[var(--color-bg-elevated)] hover:bg-red-50 text-[var(--color-text-primary)] hover:text-red-600 border border-[var(--color-border-light)] hover:border-red-200 font-semibold py-2 px-1 rounded-xl text-xs sm:text-sm transition disabled:opacity-50 flex items-center justify-center gap-1 sm:gap-1.5 whitespace-nowrap overflow-hidden"
         >
@@ -340,7 +347,7 @@ export const FriendsPage = () => {
         {activeTab === 'all' && (
           <div>
             <p className="text-sm font-semibold text-[var(--color-text-secondary)] mb-4">
-              {allFriends.length > 0 ? `${allFriends.length} người bạn` : ''}
+              {totalFriends > 0 ? `${totalFriends} người bạn` : ''}
             </p>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
               {loadingAll
@@ -349,9 +356,32 @@ export const FriendsPage = () => {
                 ? allFriends.map((f: any) => <FriendCard key={f.userId} friend={f} />)
                 : renderEmpty('Bạn chưa có bạn bè nào.', UserCheck)}
             </div>
+            {/* Load more button */}
+            {!loadingAll && hasMoreFriends && (
+              <div className="flex justify-center mt-6">
+                <button
+                  onClick={() => setFriendsPage(p => p + 1)}
+                  className="flex items-center gap-2 px-6 py-2.5 bg-[var(--color-bg-secondary)] hover:bg-[var(--color-bg-hover)] text-[var(--color-text-primary)] border border-[var(--color-border-light)] font-semibold rounded-xl transition-colors text-sm"
+                >
+                  <ChevronDown size={16} /> Xem thêm
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>
+
+      {/* Confirm unfriend dialog */}
+      <ConfirmDialog
+        isOpen={confirmUnfriend !== null}
+        title="Hủy kết bạn"
+        message="Sau khi hủy kết bạn, bạn sẽ cần gửi lại lời mời nếu muốn kết bạn lại. Tiếp tục?"
+        confirmLabel="Hủy kết bạn"
+        variant="warning"
+        isLoading={unfriendMutation.isPending}
+        onConfirm={() => confirmUnfriend !== null && unfriendMutation.mutate(confirmUnfriend)}
+        onCancel={() => setConfirmUnfriend(null)}
+      />
     </div>
   );
 };

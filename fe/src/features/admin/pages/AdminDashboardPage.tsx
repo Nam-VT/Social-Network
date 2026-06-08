@@ -1,39 +1,71 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Users, FileText, Component, AlertCircle, Clock, ArrowRight } from 'lucide-react';
 import { adminApi } from '../api/adminApi';
 import { NavLink } from 'react-router-dom';
+import { usePageTitle } from '@/hooks/usePageTitle';
+
+// Hook count-up animation
+function useCountUp(target: number, duration = 800) {
+  const [value, setValue] = React.useState(0);
+  const startRef = useRef<number | null>(null);
+  const rafRef = useRef<number>(0);
+
+  useEffect(() => {
+    if (target === 0) { setValue(0); return; }
+    startRef.current = null;
+    const animate = (timestamp: number) => {
+      if (!startRef.current) startRef.current = timestamp;
+      const elapsed = timestamp - startRef.current;
+      const progress = Math.min(elapsed / duration, 1);
+      // easeOutExpo
+      const eased = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+      setValue(Math.round(eased * target));
+      if (progress < 1) rafRef.current = requestAnimationFrame(animate);
+    };
+    rafRef.current = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(rafRef.current);
+  }, [target, duration]);
+
+  return value;
+}
+
+const StatCard = ({ title, value, icon: Icon, color, bg, isLoading }: any) => {
+  const animated = useCountUp(isLoading ? 0 : value);
+  return (
+    <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex items-center justify-between min-h-[112px]">
+      <div>
+        <p className="text-sm text-gray-500 dark:text-gray-400 font-medium mb-1">{title}</p>
+        {isLoading ? (
+          <div className="h-9 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse mt-1" />
+        ) : (
+          <h3 className="text-3xl font-bold tabular-nums">{animated.toLocaleString()}</h3>
+        )}
+      </div>
+      <div className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${isLoading ? 'bg-gray-100 dark:bg-gray-700' : bg} ${color}`}>
+        <Icon size={24} className={isLoading ? 'text-gray-300 dark:text-gray-600' : ''} />
+      </div>
+    </div>
+  );
+};
 
 export const AdminDashboardPage: React.FC = () => {
-  const { data: stats, isLoading, isError } = useQuery({
+  usePageTitle('Admin Dashboard');
+  const { data: stats, isLoading } = useQuery({
     queryKey: ['admin', 'stats'],
     queryFn: () => adminApi.getStats()
   });
 
-  const { data: recentLogs } = useQuery({
+  const { data: recentLogs, isLoading: isLoadingLogs } = useQuery({
     queryKey: ['admin', 'recent-logs'],
     queryFn: () => adminApi.getAuditLogs(0, 8),
   });
 
-  if (isLoading) {
-    return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {[1, 2, 3, 4].map(i => (
-          <div key={i} className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 animate-pulse h-32"></div>
-        ))}
-      </div>
-    );
-  }
-
-  if (isError || !stats) {
-    return <div className="text-red-500">Lỗi khi tải dữ liệu thống kê.</div>;
-  }
-
   const statCards = [
-    { title: 'Tổng Người Dùng', value: stats.totalUsers, icon: Users, color: 'text-blue-600', bg: 'bg-blue-100 dark:bg-blue-900/30' },
-    { title: 'Tổng Bài Viết', value: stats.totalPosts, icon: FileText, color: 'text-green-600', bg: 'bg-green-100 dark:bg-green-900/30' },
-    { title: 'Tổng Nhóm', value: stats.totalGroups, icon: Component, color: 'text-purple-600', bg: 'bg-purple-100 dark:bg-purple-900/30' },
-    { title: 'Báo Cáo Chờ Duyệt', value: stats.pendingReports, icon: AlertCircle, color: 'text-red-600', bg: 'bg-red-100 dark:bg-red-900/30' },
+    { title: 'Tổng Người Dùng', value: stats?.totalUsers ?? 0, icon: Users, color: 'text-blue-600', bg: 'bg-blue-100 dark:bg-blue-900/30' },
+    { title: 'Tổng Bài Viết', value: stats?.totalPosts ?? 0, icon: FileText, color: 'text-green-600', bg: 'bg-green-100 dark:bg-green-900/30' },
+    { title: 'Tổng Nhóm', value: stats?.totalGroups ?? 0, icon: Component, color: 'text-purple-600', bg: 'bg-purple-100 dark:bg-purple-900/30' },
+    { title: 'Báo Cáo Chờ Duyệt', value: stats?.pendingReports ?? 0, icon: AlertCircle, color: 'text-red-600', bg: 'bg-red-100 dark:bg-red-900/30' },
   ];
 
   const logs = recentLogs?.content || [];
@@ -41,18 +73,11 @@ export const AdminDashboardPage: React.FC = () => {
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold">Tổng quan hệ thống</h2>
-      
+
+      {/* Stat Cards — always render layout, skeleton inside each card */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {statCards.map((card, idx) => (
-          <div key={idx} className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400 font-medium mb-1">{card.title}</p>
-              <h3 className="text-3xl font-bold">{card.value.toLocaleString()}</h3>
-            </div>
-            <div className={`w-12 h-12 rounded-full flex items-center justify-center ${card.bg} ${card.color}`}>
-              <card.icon size={24} />
-            </div>
-          </div>
+          <StatCard key={idx} {...card} isLoading={isLoading} />
         ))}
       </div>
 
@@ -71,7 +96,19 @@ export const AdminDashboardPage: React.FC = () => {
           </NavLink>
         </div>
 
-        {logs.length === 0 ? (
+        {isLoadingLogs ? (
+          <ul className="divide-y divide-gray-100 dark:divide-gray-700">
+            {[1,2,3,4,5].map(i => (
+              <li key={i} className="px-6 py-4 flex items-start gap-3 animate-pulse">
+                <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex-shrink-0" />
+                <div className="flex-1 space-y-2 py-0.5">
+                  <div className="h-3.5 bg-gray-200 dark:bg-gray-700 rounded w-1/3" />
+                  <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-2/3" />
+                </div>
+              </li>
+            ))}
+          </ul>
+        ) : logs.length === 0 ? (
           <div className="p-8 text-center text-gray-500">
             Chưa có hoạt động nào được ghi nhận.
           </div>

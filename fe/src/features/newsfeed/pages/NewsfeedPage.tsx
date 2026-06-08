@@ -3,6 +3,7 @@ import { CreatePostBox } from '../components/CreatePostBox';
 import { PostItem, PostSkeleton } from '../components/PostItem';
 import { postApi } from '../api/postApi';
 import { StoryBar } from '../../stories/components/StoryBar';
+import { usePageTitle } from '@/hooks/usePageTitle';
 
 // Infinite scroll dùng cursor-based pagination.
 // BE trả về List<PostResponse> theo cursor (ISO datetime của bài cuối cùng).
@@ -11,6 +12,7 @@ import { StoryBar } from '../../stories/components/StoryBar';
 const PAGE_SIZE = 10;
 
 export const NewsfeedPage = () => {
+  usePageTitle('Trang chủ');
   const [posts, setPosts] = useState<any[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);   // initial load

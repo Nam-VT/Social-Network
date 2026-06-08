@@ -7,8 +7,10 @@ import { ChatWindow } from '../components/ChatWindow';
 import { ChatInfoSidebar } from '../components/ChatInfoSidebar';
 import { MediaLightbox } from '../components/MediaLightbox';
 import { chatApi, type ChatRoom } from '../api/chatApi';
+import { usePageTitle } from '@/hooks/usePageTitle';
 
 export const ChatPage = () => {
+  usePageTitle('Tin nhắn');
   const { roomId } = useParams<{ roomId?: string }>();
   const navigate = useNavigate();
   const [isMobileListVisible, setIsMobileListVisible] = useState(!roomId);

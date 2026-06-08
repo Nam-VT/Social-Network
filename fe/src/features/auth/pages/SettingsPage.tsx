@@ -4,10 +4,12 @@ import { Lock, Eye, Bell, Shield, ChevronRight, Check } from 'lucide-react';
 import { useMutation } from '@tanstack/react-query';
 import axiosClient from '@/api/axiosClient';
 import { toast } from '@/components/ui/Toast';
+import { usePageTitle } from '@/hooks/usePageTitle';
 
 type SettingsTab = 'password' | 'privacy' | 'notifications' | 'security';
 
 export const SettingsPage: React.FC = () => {
+  usePageTitle('Cài đặt');
   const user = useAuthStore(state => state.user);
   const [activeTab, setActiveTab] = useState<SettingsTab>('password');
 
