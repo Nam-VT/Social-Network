@@ -19,11 +19,27 @@ public interface PostRepository extends JpaRepository<Post, Long> {
         // Tìm bài viết theo user (cho Profile) nhưng phải lọc bài trong Group Private
         // và bài chờ duyệt trong nhóm (PENDING) chỉ chủ bài mới thấy của chính mình
         @Query("SELECT p FROM Post p LEFT JOIN p.group g WHERE p.user = :targetUser AND " +
-                        "(g IS NULL OR " +
-                        " (g.privacy = 'PUBLIC' AND (p.groupPostStatus = 'APPROVED' OR p.user = :currentUser)) OR " +
-                        " (g.privacy = 'PRIVATE' AND g IN (" +
-                        "   SELECT gm.group FROM GroupMember gm WHERE gm.user = :currentUser AND gm.approved = true" +
-                        " ) AND (p.groupPostStatus = 'APPROVED' OR p.user = :currentUser))) " +
+                        "(" +
+                        "  (g IS NULL AND (" +
+                        "    p.user = :currentUser " +
+                        "    OR " +
+                        "    p.visibility = 'PUBLIC' " +
+                        "    OR " +
+                        "    (p.visibility = 'FRIENDS' AND (" +
+                        "      p.user IN (SELECT f.addressee FROM Friendship f WHERE f.requester = :currentUser AND f.status = 'ACCEPTED') " +
+                        "      OR " +
+                        "      p.user IN (SELECT f.requester FROM Friendship f WHERE f.addressee = :currentUser AND f.status = 'ACCEPTED')" +
+                        "    ))" +
+                        "  ))" +
+                        "  OR " +
+                        "  (g IS NOT NULL AND (" +
+                        "    (g.privacy = 'PUBLIC' AND (p.groupPostStatus = 'APPROVED' OR p.user = :currentUser)) " +
+                        "    OR " +
+                        "    (g.privacy = 'PRIVATE' AND g IN (" +
+                        "      SELECT gm.group FROM GroupMember gm WHERE gm.user = :currentUser AND gm.approved = true" +
+                        "    ) AND (p.groupPostStatus = 'APPROVED' OR p.user = :currentUser))" +
+                        "  ))" +
+                        ") " +
                         "ORDER BY p.createdAt DESC")
         Page<Post> findProfilePostsForUser(
                         @Param("targetUser") User targetUser,

@@ -621,7 +621,7 @@ public class PostService {
                 .orElseThrow(() -> new RuntimeException(ErrorCode.USER_NOT_FOUND.getMessage()));
 
         Pageable pageable = PageRequest.of(page, size);
-        return postHashtagRepository.findPostsByHashtagName(tag.toLowerCase(), pageable)
+        return postHashtagRepository.findPostsByHashtagName(tag.toLowerCase(), currentUser, pageable)
                 .map(post -> toPostResponse(post, currentUser));
     }
 
