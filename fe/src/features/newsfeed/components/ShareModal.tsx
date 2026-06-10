@@ -3,6 +3,7 @@ import { X, Loader2, Globe } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { postApi } from '../api/postApi';
 import { useAuthStore } from '@/store/useAuthStore';
+import { toast } from '@/components/ui/Toast';
 
 interface ShareModalProps {
   post: any;
@@ -18,7 +19,12 @@ export const ShareModal = ({ post, onClose }: ShareModalProps) => {
     mutationFn: () => postApi.sharePost(post.id, content || undefined),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['newsfeed'] });
+      toast.success('Đã chia sẻ bài viết thành công!');
       onClose();
+    },
+    onError: (err: any) => {
+      console.error(err);
+      toast.error(err.response?.data?.message || 'Chia sẻ bài viết thất bại');
     }
   });
 

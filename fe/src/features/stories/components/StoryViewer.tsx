@@ -207,7 +207,7 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({
         <div className="absolute top-4 left-0 right-0 p-4 flex items-center justify-between z-20">
           <div className="flex items-center gap-3">
             <img
-              src={currentGroup.userAvatar || 'https://via.placeholder.com/150'}
+              src={currentGroup.userAvatar || 'https://i.pravatar.cc/150'}
               alt={currentGroup.userFullName}
               className="w-10 h-10 rounded-full object-cover border border-gray-600"
             />
@@ -294,7 +294,7 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({
                 currentStory.views.map((v) => (
                   <div key={v.username} className="flex items-center gap-3 px-3 py-2 hover:bg-white/5">
                     <img
-                      src={v.userAvatar || 'https://via.placeholder.com/40'}
+                      src={v.userAvatar || 'https://i.pravatar.cc/150'}
                       alt={v.userFullName}
                       className="w-8 h-8 rounded-full object-cover"
                     />

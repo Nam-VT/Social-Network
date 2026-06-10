@@ -23,7 +23,7 @@ export const StoryRing: React.FC<StoryRingProps> = ({
       <div className={`relative p-[3px] rounded-full ${hasUnviewed ? 'bg-gradient-to-tr from-yellow-400 to-pink-500' : 'bg-gray-300 dark:bg-gray-700'}`}>
         <div className="bg-white dark:bg-gray-900 rounded-full p-[2px]">
           <img
-            src={avatarUrl || 'https://via.placeholder.com/150'}
+            src={avatarUrl || 'https://i.pravatar.cc/150'}
             alt={name}
             className="w-14 h-14 rounded-full object-cover"
           />
