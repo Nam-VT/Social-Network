@@ -73,7 +73,7 @@ export const CreatePostModal = ({ isOpen, onClose, onSuccess, groupId = null }: 
 
       return postApi.createPost({
         content,
-        visibility,
+        visibility: groupId ? 'PUBLIC' : visibility,
         groupId,
         mediaList
       });
@@ -126,19 +126,26 @@ export const CreatePostModal = ({ isOpen, onClose, onSuccess, groupId = null }: 
             />
             <div>
               <div className="create-post-user-name">{user?.fullName || user?.username || 'Người dùng'}</div>
-              <div className="create-post-visibility mt-1 flex items-center gap-1 bg-slate-100 rounded-md px-2 py-0.5 w-max">
-                <Users size={12} />
-                <select 
-                  className="bg-transparent text-xs font-semibold outline-none cursor-pointer text-slate-700"
-                  value={visibility}
-                  onChange={(e) => setVisibility(e.target.value)}
-                  disabled={isPending}
-                >
-                  <option value="PUBLIC">Công khai</option>
-                  <option value="FRIENDS">Bạn bè</option>
-                  <option value="PRIVATE">Chỉ mình tôi</option>
-                </select>
-              </div>
+              {groupId ? (
+                <div className="create-post-visibility mt-1 flex items-center gap-1 bg-slate-100 rounded-md px-2 py-0.5 w-max text-xs font-semibold text-slate-600">
+                  <Users size={12} />
+                  <span>Bài viết trong nhóm</span>
+                </div>
+              ) : (
+                <div className="create-post-visibility mt-1 flex items-center gap-1 bg-slate-100 rounded-md px-2 py-0.5 w-max">
+                  <Users size={12} />
+                  <select 
+                    className="bg-transparent text-xs font-semibold outline-none cursor-pointer text-slate-700"
+                    value={visibility}
+                    onChange={(e) => setVisibility(e.target.value)}
+                    disabled={isPending}
+                  >
+                    <option value="PUBLIC">Công khai</option>
+                    <option value="FRIENDS">Bạn bè</option>
+                    <option value="PRIVATE">Chỉ mình tôi</option>
+                  </select>
+                </div>
+              )}
             </div>
           </div>
 
