@@ -45,6 +45,10 @@ public class ChatMessage {
 
     private Long replyToMessageId;
 
+    @OneToMany(mappedBy = "message", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private java.util.List<MessageReaction> reactions = new java.util.ArrayList<>();
+
     @CreationTimestamp
     private LocalDateTime createdAt;
 }
