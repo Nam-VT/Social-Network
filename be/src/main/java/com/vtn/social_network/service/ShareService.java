@@ -44,6 +44,20 @@ public class ShareService {
                 .build();
         postShareRepository.save(share);
 
+        // CREATE A NEW POST IN THE FEED SO IT APPEARS ON THE WALL
+        String shareContent = "";
+        if (content != null && !content.trim().isEmpty()) {
+            shareContent = content + "\n\n";
+        }
+        shareContent += "🔄 Đã chia sẻ bài viết của " + post.getUser().getFullName() 
+                + "\n👉 Xem bài viết gốc tại: https://vutiennam-20225055.id.vn/post/" + post.getId();
+
+        Post newFeedPost = Post.builder()
+                .user(user)
+                .content(shareContent)
+                .build();
+        postRepository.save(newFeedPost);
+
         // Notify tác giả bài gốc
         if (!post.getUser().getId().equals(user.getId())) {
             notificationService.sendNotification(
