@@ -124,7 +124,7 @@ export const RegisterPage = () => {
           </div>
 
           <a
-            href={`${import.meta.env.VITE_API_URL || ''}/oauth2/authorization/google`}
+            href={`${(import.meta.env.VITE_API_URL || '').replace(/\/api$/, '')}/oauth2/authorization/google`}
             className="w-full flex items-center justify-center gap-3 py-2.5 px-4 bg-white border border-slate-300 rounded-lg text-slate-700 font-medium hover:bg-slate-50 transition"
           >
             <svg viewBox="0 0 24 24" className="w-5 h-5">
