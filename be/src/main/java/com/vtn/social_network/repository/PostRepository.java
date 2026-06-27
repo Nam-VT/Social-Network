@@ -18,7 +18,7 @@ import java.util.List;
 public interface PostRepository extends JpaRepository<Post, Long> {
         // Tìm bài viết theo user (cho Profile) nhưng phải lọc bài trong Group Private
         // và bài chờ duyệt trong nhóm (PENDING) chỉ chủ bài mới thấy của chính mình
-        @Query("SELECT p FROM Post p LEFT JOIN p.group g WHERE p.user = :targetUser AND " +
+        @Query("SELECT p FROM Post p LEFT JOIN FETCH p.user LEFT JOIN FETCH p.group g WHERE p.user = :targetUser AND " +
                         "(" +
                         "  (g IS NULL AND (" +
                         "    p.user = :currentUser " +
@@ -48,7 +48,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
         // Lấy bài viết cho News Feed: từ mình, bạn bè (PUBLIC+FRIENDS), người đang
         // follow (PUBLIC only), và bài từ Groups đã tham gia
-        @Query("SELECT p FROM Post p WHERE p.createdAt < :cursor AND " +
+        @Query("SELECT p FROM Post p LEFT JOIN FETCH p.user LEFT JOIN FETCH p.group WHERE p.createdAt < :cursor AND " +
                         "p.user.id NOT IN (" +
                         "  SELECT CASE WHEN f2.requester.id = :userId THEN f2.addressee.id ELSE f2.requester.id END " +
                         "  FROM Friendship f2 " +
@@ -80,10 +80,14 @@ public interface PostRepository extends JpaRepository<Post, Long> {
                         Pageable pageable);
 
         // Group feed
-        List<Post> findByGroupAndGroupPostStatusOrderByCreatedAtDesc(SocialGroup group, GroupPostStatus status);
+        @Query(value = "SELECT p FROM Post p LEFT JOIN FETCH p.user LEFT JOIN FETCH p.group WHERE p.group = :group AND p.groupPostStatus = :status ORDER BY p.createdAt DESC",
+               countQuery = "SELECT count(p) FROM Post p WHERE p.group = :group AND p.groupPostStatus = :status")
+        List<Post> findByGroupAndGroupPostStatusOrderByCreatedAtDesc(@Param("group") SocialGroup group, @Param("status") GroupPostStatus status);
 
-        Page<Post> findByGroupAndGroupPostStatusOrderByCreatedAtDesc(SocialGroup group,
-                        GroupPostStatus status, Pageable pageable);
+        @Query(value = "SELECT p FROM Post p LEFT JOIN FETCH p.user LEFT JOIN FETCH p.group WHERE p.group = :group AND p.groupPostStatus = :status ORDER BY p.createdAt DESC",
+               countQuery = "SELECT count(p) FROM Post p WHERE p.group = :group AND p.groupPostStatus = :status")
+        Page<Post> findByGroupAndGroupPostStatusOrderByCreatedAtDesc(@Param("group") SocialGroup group,
+                        @Param("status") GroupPostStatus status, Pageable pageable);
 
         // Admin search
         Page<Post> findByContentContainingIgnoreCase(String keyword, Pageable pageable);

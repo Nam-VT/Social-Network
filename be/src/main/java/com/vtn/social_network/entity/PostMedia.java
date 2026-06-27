@@ -6,7 +6,8 @@ import lombok.*;
 
 @Entity
 @Table(name = "post_media")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

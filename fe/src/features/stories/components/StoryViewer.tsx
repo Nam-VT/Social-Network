@@ -5,6 +5,7 @@ import { formatLastSeen } from '@/utils/formatLastSeen';
 import { storyApi } from '../api/storyApi';
 import { useAuthStore } from '../../../store/useAuthStore';
 import type { StoryGroupResponse, StoryResponse } from '../types';
+import { useStoryViewSocket } from '@/hooks/useStoryViewSocket';
 
 interface StoryViewerProps {
   initialGroupIndex: number;
@@ -35,6 +36,32 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({
 
   const currentGroup = storyGroups[groupIndex];
   const currentStory = currentGroup?.stories[storyIndex];
+
+  // Local state để hiển thị views real-time mà không cần tải lại toàn bộ
+  const [liveStoryData, setLiveStoryData] = useState<{ id: number, viewCount: number, views: any[] } | null>(null);
+
+  useEffect(() => {
+    if (currentStory) {
+      setLiveStoryData({
+        id: currentStory.id,
+        viewCount: currentStory.viewCount,
+        views: currentStory.views || []
+      });
+    }
+  }, [currentStory]);
+
+  useStoryViewSocket(currentStory?.id, (payload) => {
+    if (payload.storyId === currentStory?.id) {
+      setLiveStoryData({
+        id: payload.storyId,
+        viewCount: payload.viewCount,
+        views: payload.views
+      });
+    }
+  });
+
+  const displayViewCount = liveStoryData?.id === currentStory?.id ? liveStoryData.viewCount : currentStory?.viewCount;
+  const displayViews = liveStoryData?.id === currentStory?.id ? liveStoryData.views : currentStory?.views;
 
   // Logic gọi API đánh dấu đã xem
   const viewMutation = useMutation({
@@ -285,13 +312,13 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({
           {isOwner && showViewers && (
             <div className="mx-4 mb-2 bg-black/70 backdrop-blur-md rounded-xl max-h-[200px] overflow-y-auto custom-scrollbar">
               <div className="p-3 border-b border-white/10 flex items-center justify-between">
-                <span className="text-white text-sm font-semibold">👁️ {currentStory.viewCount} lượt xem</span>
+                <span className="text-white text-sm font-semibold">👁️ {displayViewCount} lượt xem</span>
                 <button onClick={(e) => { e.stopPropagation(); setShowViewers(false); }} className="text-white/60 hover:text-white">
                   <X size={16} />
                 </button>
               </div>
-              {currentStory.views && currentStory.views.length > 0 ? (
-                currentStory.views.map((v) => (
+              {displayViews && displayViews.length > 0 ? (
+                displayViews.map((v) => (
                   <div key={v.username} className="flex items-center gap-3 px-3 py-2 hover:bg-white/5">
                     <img
                       src={v.userAvatar || 'https://i.pravatar.cc/150'}
@@ -302,7 +329,7 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({
                       <p className="text-white text-sm font-medium truncate">{v.userFullName}</p>
                     </div>
                     {v.reactionType ? (
-                      <span className="text-xl">{REACTION_EMOJI[v.reactionType] || '👍'}</span>
+                      <span className="text-xl animate-bounce">{REACTION_EMOJI[v.reactionType] || '👍'}</span>
                     ) : (
                       <span className="text-xs text-gray-400">Đã xem</span>
                     )}
@@ -321,7 +348,7 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({
               onClick={(e) => { e.stopPropagation(); setIsPaused(true); setShowViewers(true); }}
             >
               <Eye size={16} className="text-white/80" />
-              <span className="text-white/80 text-sm">{currentStory.viewCount} lượt xem</span>
+              <span className="text-white/80 text-sm">{displayViewCount} lượt xem</span>
               <ChevronUp size={14} className="text-white/60" />
             </div>
           )}

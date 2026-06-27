@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+
 import com.vtn.social_network.dto.chat.request.SendMessageRequest;
 
 @Slf4j
@@ -44,6 +46,7 @@ public class StoryService {
         private final FriendshipService friendshipService;
         private final CloudinaryService cloudinaryService;
         private final ChatService chatService;
+        private final SimpMessagingTemplate messagingTemplate;
 
         @Transactional
         public Story createStory(String username, StoryCreateRequest request) {
@@ -198,6 +201,8 @@ public class StoryService {
                 notificationService.sendNotification(
                                 story.getUser(), user, NotificationType.STORY_REACT,
                                 story.getId(), TargetType.STORY, "/");
+                                
+                pushStoryUpdates(story);
         }
 
         @Transactional
@@ -326,6 +331,8 @@ public class StoryService {
                                         .viewer(user)
                                         .build());
                         log.info("User {} đã xem story của {}", username, story.getUser().getUsername());
+                        
+                        pushStoryUpdates(story);
                 }
         }
 
@@ -433,6 +440,32 @@ public class StoryService {
         }
 
         // ==================== PRIVATE HELPERS ====================
+        
+        private void pushStoryUpdates(Story story) {
+                List<StoryView> views = storyViewRepository.findByStoryOrderByViewedAtDesc(story);
+
+                List<StoryView> uniqueViews = new ArrayList<>(views.stream()
+                                .collect(Collectors.toMap(
+                                                v -> v.getViewer().getId(),
+                                                v -> v,
+                                                (v1, v2) -> v1.getReactionType() != null ? v1 : v2))
+                                .values());
+
+                List<StoryViewResponse> viewResponses = uniqueViews.stream()
+                                .map(v -> StoryViewResponse.builder()
+                                                .username(v.getViewer().getUsername())
+                                                .userFullName(v.getViewer().getFullName())
+                                                .userAvatar(v.getViewer().getAvatarUrl())
+                                                .reactionType(v.getReactionType())
+                                                .viewedAt(v.getViewedAt())
+                                                .build())
+                                .collect(Collectors.toList());
+
+                Object payload = Map.of("storyId", story.getId(),
+                                       "viewCount", uniqueViews.size(),
+                                       "views", viewResponses);
+                messagingTemplate.convertAndSend("/topic/stories/" + story.getId() + "/views", payload);
+        }
 
         private ChatRoom findOrCreatePrivateChatRoom(User u1, User u2) {
                 List<Member> u1Rooms = memberRepository.findByUserOrderByChatRoomLastMessageAtDesc(u1);

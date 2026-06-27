@@ -6,7 +6,8 @@ import lombok.*;
 
 @Entity
 @Table(name = "post_likes")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

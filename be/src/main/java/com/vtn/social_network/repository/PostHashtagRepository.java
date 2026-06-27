@@ -15,20 +15,35 @@ import com.vtn.social_network.entity.User;
 public interface PostHashtagRepository extends JpaRepository<PostHashtag, Long> {
     void deleteByPost(Post post);
 
-    @Query("SELECT ph.post FROM PostHashtag ph WHERE ph.hashtag.name = :tag AND " +
+    @Query(value = "SELECT p FROM PostHashtag ph JOIN ph.post p LEFT JOIN FETCH p.user LEFT JOIN FETCH p.group WHERE ph.hashtag.name = :tag AND " +
            "(" +
-           "  (ph.post.group IS NULL AND (" +
-           "    ph.post.user = :currentUser OR " +
-           "    ph.post.visibility = 'PUBLIC' OR " +
-           "    (ph.post.visibility = 'FRIENDS' AND (" +
-           "      ph.post.user IN (SELECT f.addressee FROM Friendship f WHERE f.requester = :currentUser AND f.status = 'ACCEPTED') OR " +
-           "      ph.post.user IN (SELECT f.requester FROM Friendship f WHERE f.addressee = :currentUser AND f.status = 'ACCEPTED')" +
+           "  (p.group IS NULL AND (" +
+           "    p.user = :currentUser OR " +
+           "    p.visibility = 'PUBLIC' OR " +
+           "    (p.visibility = 'FRIENDS' AND (" +
+           "      p.user IN (SELECT f.addressee FROM Friendship f WHERE f.requester = :currentUser AND f.status = 'ACCEPTED') OR " +
+           "      p.user IN (SELECT f.requester FROM Friendship f WHERE f.addressee = :currentUser AND f.status = 'ACCEPTED')" +
            "    ))" +
            "  ))" +
            "  OR " +
-           "  (ph.post.group IS NOT NULL AND ph.post.groupPostStatus = 'APPROVED' AND ph.post.group IN (" +
+           "  (p.group IS NOT NULL AND p.groupPostStatus = 'APPROVED' AND p.group IN (" +
            "    SELECT gm.group FROM GroupMember gm WHERE gm.user = :currentUser AND gm.approved = true" +
            "  ))" +
-           ") ORDER BY ph.post.createdAt DESC")
+           ") ORDER BY p.createdAt DESC",
+           countQuery = "SELECT count(p) FROM PostHashtag ph JOIN ph.post p WHERE ph.hashtag.name = :tag AND " +
+           "(" +
+           "  (p.group IS NULL AND (" +
+           "    p.user = :currentUser OR " +
+           "    p.visibility = 'PUBLIC' OR " +
+           "    (p.visibility = 'FRIENDS' AND (" +
+           "      p.user IN (SELECT f.addressee FROM Friendship f WHERE f.requester = :currentUser AND f.status = 'ACCEPTED') OR " +
+           "      p.user IN (SELECT f.requester FROM Friendship f WHERE f.addressee = :currentUser AND f.status = 'ACCEPTED')" +
+           "    ))" +
+           "  ))" +
+           "  OR " +
+           "  (p.group IS NOT NULL AND p.groupPostStatus = 'APPROVED' AND p.group IN (" +
+           "    SELECT gm.group FROM GroupMember gm WHERE gm.user = :currentUser AND gm.approved = true" +
+           "  ))" +
+           ")")
     Page<Post> findPostsByHashtagName(@Param("tag") String tag, @Param("currentUser") User currentUser, Pageable pageable);
 }

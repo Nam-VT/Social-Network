@@ -10,7 +10,8 @@ import java.time.LocalDateTime;
 @Table(name = "saved_posts", uniqueConstraints = {
         @UniqueConstraint(columnNames = { "user_id", "post_id" })
 })
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor

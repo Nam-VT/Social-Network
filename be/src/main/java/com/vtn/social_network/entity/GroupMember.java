@@ -11,7 +11,8 @@ import java.time.LocalDateTime;
 @Table(name = "group_members", uniqueConstraints = {
         @UniqueConstraint(columnNames = { "group_id", "user_id" })
 })
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor

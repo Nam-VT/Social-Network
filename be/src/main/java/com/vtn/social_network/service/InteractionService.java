@@ -66,6 +66,10 @@ public class InteractionService {
                                                                 log.info("User {} đã gỡ reaction khỏi {} id={}",
                                                                                 username, request.getTargetType(),
                                                                                 request.getTargetId());
+                                                                // Push real-time count update khi gỡ reaction
+                                                                if (request.getTargetType() == TargetType.POST) {
+                                                                        postService.pushPostCounts(request.getTargetId());
+                                                                }
                                                         } else {
                                                                 existing.setReactionType(request.getReactionType());
                                                                 reactionRepository.save(existing);

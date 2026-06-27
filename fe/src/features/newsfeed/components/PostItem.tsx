@@ -9,6 +9,7 @@ import { ShareModal } from './ShareModal';
 import { Lightbox } from './Lightbox';
 import { MentionDropdown } from './MentionDropdown';
 import { LazyImage } from '@/components/ui/LazyImage';
+import { usePostCountSocket } from '@/hooks/usePostCountSocket';
 import '@/styles/newsfeed/post-item.css';
 import '@/styles/newsfeed/comment.css';
 
@@ -112,7 +113,7 @@ export interface PostProps {
 
 const REACTIONS = [
   { type: 'LIKE', emoji: '👍', label: 'Thích', color: 'var(--color-accent)' },
-  { type: 'LOVE', emoji: '❤️', label: 'Yêu thích', color: '#f02849' },
+  { type: 'HEART', emoji: '❤️', label: 'Yêu thích', color: '#f02849' },
   { type: 'HAHA', emoji: '😂', label: 'Haha', color: '#f7b125' },
   { type: 'WOW', emoji: '😮', label: 'Wow', color: '#f7b125' },
   { type: 'SAD', emoji: '😢', label: 'Buồn', color: '#f7b125' },
@@ -147,13 +148,28 @@ export const PostItem = ({ post, defaultShowComments = false, onDeleted }: PostP
   // Reaction State
   const [reaction, setReaction] = useState<string | null>(post.myReaction || (post.isLiked ? 'LIKE' : null));
   const [likesCount, setLikesCount] = useState(post.likeCount);
+  const [commentCount, setCommentCount] = useState(post.commentCount);
+  const [shareCount, setShareCount] = useState(post.shareCount);
+  const [reactionCounts, setReactionCounts] = useState<Record<string, number>>(post.reactionCounts || {});
   const [isSaved, setIsSaved] = useState(post.isSaved);
 
+  // Sync khi prop thay đổi (parent re-render)
   useEffect(() => {
     setReaction(post.myReaction || (post.isLiked ? 'LIKE' : null));
     setLikesCount(post.likeCount);
+    setCommentCount(post.commentCount);
+    setShareCount(post.shareCount);
+    setReactionCounts(post.reactionCounts || {});
     setIsSaved(post.isSaved);
-  }, [post.myReaction, post.isLiked, post.likeCount, post.isSaved]);
+  }, [post.myReaction, post.isLiked, post.likeCount, post.commentCount, post.shareCount, post.reactionCounts, post.isSaved]);
+
+  // Real-time WebSocket: cập nhật count khi có like/comment/share từ bất kỳ user nào
+  usePostCountSocket(post.id, (payload) => {
+    setLikesCount(payload.likeCount);
+    setCommentCount(payload.commentCount);
+    setShareCount(payload.shareCount);
+    setReactionCounts(payload.reactionCounts as Record<string, number>);
+  });
 
   // Comment Section State
   const [showComments, setShowComments] = useState(defaultShowComments);
@@ -205,8 +221,8 @@ export const PostItem = ({ post, defaultShowComments = false, onDeleted }: PostP
   const [activeMentions, setActiveMentions] = useState<{display: string, username: string}[]>([]);
   const commentInputRef = useRef<HTMLTextAreaElement>(null);
 
-  // Parse reaction breakdown
-  const reactionBreakdown = Object.entries(post.reactionCounts || {})
+  // Parse reaction breakdown — dùng local state thay vì prop
+  const reactionBreakdown = Object.entries(reactionCounts)
     .filter(([_, count]) => count > 0)
     .sort((a, b) => b[1] - a[1])
     .map(([type, count]) => {
@@ -266,12 +282,36 @@ export const PostItem = ({ post, defaultShowComments = false, onDeleted }: PostP
   const handleSelectReaction = (type: string) => {
     if (reaction === type) return;
     if (reaction === null) setLikesCount(prev => prev + 1);
+
+    // Optimistic UI cho biểu đồ cảm xúc
+    setReactionCounts(prev => {
+      const newCounts = { ...prev };
+      if (reaction) {
+        newCounts[reaction] = Math.max(0, (newCounts[reaction] || 0) - 1);
+      }
+      newCounts[type] = (newCounts[type] || 0) + 1;
+      return newCounts;
+    });
+
     setReaction(type);
     reactMutation.mutate(type);
   };
 
   const handleToggleDefaultLike = () => {
     const newReaction = reaction ? null : 'LIKE';
+
+    // Optimistic UI cho biểu đồ cảm xúc
+    setReactionCounts(prev => {
+      const newCounts = { ...prev };
+      if (reaction) {
+        newCounts[reaction] = Math.max(0, (newCounts[reaction] || 0) - 1);
+      }
+      if (newReaction) {
+        newCounts[newReaction] = (newCounts[newReaction] || 0) + 1;
+      }
+      return newCounts;
+    });
+
     setReaction(newReaction);
     setLikesCount(prev => reaction ? prev - 1 : prev + 1);
     reactMutation.mutate(newReaction);
@@ -559,14 +599,14 @@ export const PostItem = ({ post, defaultShowComments = false, onDeleted }: PostP
           )}
         </div>
         <div className="flex items-center gap-3">
-          {post.commentCount > 0 && (
+          {commentCount > 0 && (
             <span className="cursor-pointer hover:underline" onClick={handleToggleComments}>
-              {post.commentCount} bình luận
+              {commentCount} bình luận
             </span>
           )}
-          {post.shareCount > 0 && (
+          {shareCount > 0 && (
             <span className="cursor-pointer hover:underline text-slate-500 text-sm">
-              {post.shareCount} lượt chia sẻ
+              {shareCount} lượt chia sẻ
             </span>
           )}
         </div>

@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -90,8 +91,16 @@ public class PostService {
         postRepository.save(post);
         extractAndSaveHashtags(post);
         extractAndNotifyMentions(post);
-        searchIndexingService.indexPostDirect(post);
+        searchIndexingService.sendSearchIndexEvent("POST_CREATED", post.getId());
         log.info("User {} đã tạo bài viết id={}", username, post.getId());
+
+        // Bắn event realtime qua WebSocket để client báo "Có bài viết mới"
+        if (post.getVisibility() == Visibility.PUBLIC || post.getVisibility() == Visibility.FRIENDS) {
+            if (post.getGroup() == null || post.getGroupPostStatus() == GroupPostStatus.APPROVED) {
+                Object payload = Map.of("postId", post.getId(), "author", username);
+                messagingTemplate.convertAndSend("/topic/newsfeed/new", payload);
+            }
+        }
 
         return toPostResponse(post, user);
     }
@@ -129,7 +138,7 @@ public class PostService {
         postRepository.save(post);
         extractAndSaveHashtags(post);
         extractAndNotifyMentions(post);
-        searchIndexingService.indexPostDirect(post);
+        searchIndexingService.sendSearchIndexEvent("POST_UPDATED", post.getId());
         log.info("User {} đã cập nhật bài viết id={}", username, postId);
 
         return toPostResponse(post, user);
@@ -148,7 +157,7 @@ public class PostService {
 
         // Hibernate cascade CascadeType.ALL sẽ tự xóa post_hashtags và post_media
         postRepository.delete(post);
-        searchIndexingService.deletePostDirect(post.getId());
+        searchIndexingService.sendSearchIndexEvent("POST_DELETED", post.getId());
         log.info("User {} đã xóa bài viết id={}", username, postId);
     }
 
@@ -166,8 +175,8 @@ public class PostService {
 
         Pageable pageable = PageRequest.of(page, size);
 
-        return postRepository.findProfilePostsForUser(targetUser, currentUser, pageable)
-                .map(post -> toPostResponse(post, currentUser));
+        Page<Post> postPage = postRepository.findProfilePostsForUser(targetUser, currentUser, pageable);
+        return toPostResponsePage(postPage, currentUser);
     }
 
     /**
@@ -204,9 +213,9 @@ public class PostService {
 
         Pageable pageable = PageRequest.of(page, size);
 
-        return postRepository
-                .findByGroupAndGroupPostStatusOrderByCreatedAtDesc(group, GroupPostStatus.APPROVED, pageable)
-                .map(post -> toPostResponse(post, user));
+        Page<Post> postPage = postRepository
+                .findByGroupAndGroupPostStatusOrderByCreatedAtDesc(group, GroupPostStatus.APPROVED, pageable);
+        return toPostResponsePage(postPage, user);
     }
 
     /**
@@ -219,8 +228,8 @@ public class PostService {
                 .orElseThrow(() -> new RuntimeException(ErrorCode.USER_NOT_FOUND.getMessage()));
         requireGroupAdminOrMod(group, user);
 
-        return postRepository.findByGroupAndGroupPostStatusOrderByCreatedAtDesc(group, GroupPostStatus.PENDING, pageable)
-                .map(post -> toPostResponse(post, user));
+        Page<Post> postPage = postRepository.findByGroupAndGroupPostStatusOrderByCreatedAtDesc(group, GroupPostStatus.PENDING, pageable);
+        return toPostResponsePage(postPage, user);
     }
 
     /**
@@ -455,6 +464,11 @@ public class PostService {
         }).collect(Collectors.toList());
     }
 
+    private Page<PostResponse> toPostResponsePage(Page<Post> postPage, User currentUser) {
+        List<PostResponse> responseList = toPostResponseList(postPage.getContent(), currentUser);
+        return new org.springframework.data.domain.PageImpl<>(responseList, postPage.getPageable(), postPage.getTotalElements());
+    }
+
     public PostResponse toPostResponse(Post post, User currentUser) {
         PostResponse response = new PostResponse();
         response.setId(post.getId());
@@ -595,21 +609,24 @@ public class PostService {
      */
     private void extractAndNotifyMentions(Post post) {
         if (post.getContent() == null) return;
-        Matcher matcher = MENTION_PATTERN.matcher(post.getContent());
-        java.util.Set<String> tags = new java.util.LinkedHashSet<>();
-        while (matcher.find()) {
-            tags.add(matcher.group(1));
-        }
+        
+        java.util.concurrent.CompletableFuture.runAsync(() -> {
+            Matcher matcher = MENTION_PATTERN.matcher(post.getContent());
+            java.util.Set<String> tags = new java.util.LinkedHashSet<>();
+            while (matcher.find()) {
+                tags.add(matcher.group(1));
+            }
 
-        for (String username : tags) {
-            userRepository.findByUsername(username).ifPresent(mentionedUser -> {
-                if (mentionedUser.getId().equals(post.getUser().getId())) return;
-                notificationService.sendNotification(
-                    mentionedUser, post.getUser(), NotificationType.MENTION,
-                    post.getId(), TargetType.POST, "/posts/" + post.getId()
-                );
-            });
-        }
+            for (String username : tags) {
+                userRepository.findByUsername(username).ifPresent(mentionedUser -> {
+                    if (mentionedUser.getId().equals(post.getUser().getId())) return;
+                    notificationService.sendNotification(
+                        mentionedUser, post.getUser(), NotificationType.MENTION,
+                        post.getId(), TargetType.POST, "/posts/" + post.getId()
+                    );
+                });
+            }
+        });
     }
 
     /**
@@ -621,8 +638,8 @@ public class PostService {
                 .orElseThrow(() -> new RuntimeException(ErrorCode.USER_NOT_FOUND.getMessage()));
 
         Pageable pageable = PageRequest.of(page, size);
-        return postHashtagRepository.findPostsByHashtagName(tag.toLowerCase(), currentUser, pageable)
-                .map(post -> toPostResponse(post, currentUser));
+        Page<Post> postPage = postHashtagRepository.findPostsByHashtagName(tag.toLowerCase(), currentUser, pageable);
+        return toPostResponsePage(postPage, currentUser);
     }
 
     /**

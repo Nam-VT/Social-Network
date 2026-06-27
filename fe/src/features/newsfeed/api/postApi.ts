@@ -36,13 +36,13 @@ export const uploadApi = {
 };
 
 export const postApi = {
-  getNewsFeed: async (cursor: string | null = null) => {
+  getNewsFeed: async (cursor: string | null = null, size: number = 10) => {
     // BE expects LocalDateTime format: 2026-05-11T15:00:00 (no Z, no ms)
     const formattedCursor = cursor
       ? cursor.replace('Z', '').split('.')[0]
       : undefined;
     const res = await axiosClient.get('/posts/feed', {
-      params: { cursor: formattedCursor, size: 10 }
+      params: { cursor: formattedCursor, size }
     });
     return res.data;
   },

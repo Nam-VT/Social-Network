@@ -4,6 +4,7 @@ import { PostItem, PostSkeleton } from '../components/PostItem';
 import { postApi } from '../api/postApi';
 import { StoryBar } from '../../stories/components/StoryBar';
 import { usePageTitle } from '@/hooks/usePageTitle';
+import { useNewsfeedSocket } from '@/hooks/useNewsfeedSocket';
 
 // Infinite scroll dùng cursor-based pagination.
 // BE trả về List<PostResponse> theo cursor (ISO datetime của bài cuối cùng).
@@ -19,6 +20,10 @@ export const NewsfeedPage = () => {
   const [isFetching, setIsFetching] = useState(false); // load-more
   const [hasMore, setHasMore] = useState(true);
   const [isError, setIsError] = useState(false);
+
+  // Banner bài mới
+  const [newPostsAvailable, setNewPostsAvailable] = useState(false);
+  const latestPostIdRef = useRef<number | null>(null);
 
   const sentinelRef = useRef<HTMLDivElement>(null);
 
@@ -37,6 +42,9 @@ export const NewsfeedPage = () => {
 
       if (replace) {
         setPosts(newPosts);
+        // Reset latestPostId để tracking lại sau khi refresh
+        latestPostIdRef.current = newPosts.length > 0 ? newPosts[0].id : null;
+        setNewPostsAvailable(false);
       } else {
         setPosts((prev) => {
           // De-duplicate by id
@@ -64,6 +72,21 @@ export const NewsfeedPage = () => {
   useEffect(() => {
     fetchPosts(null, true);
   }, [fetchPosts]);
+
+  // Lưu id bài mới nhất sau khi load xong lần đầu
+  useEffect(() => {
+    if (posts.length > 0 && latestPostIdRef.current === null) {
+      latestPostIdRef.current = posts[0].id;
+    }
+  }, [posts]);
+
+  // Lắng nghe WebSocket: có bài viết mới
+  useNewsfeedSocket((payload) => {
+    // Nếu payload.postId > latestPostIdRef.current thì hiện banner
+    if (latestPostIdRef.current !== null && payload.postId > latestPostIdRef.current) {
+      setNewPostsAvailable(true);
+    }
+  });
 
   // IntersectionObserver — watch sentinel at bottom
   useEffect(() => {
@@ -96,6 +119,24 @@ export const NewsfeedPage = () => {
     <div className="w-full max-w-[600px] mx-auto">
       <StoryBar />
       <CreatePostBox onPostCreated={handlePostCreated} />
+
+      {/* Banner bài viết mới */}
+      {newPostsAvailable && (
+        <div className="sticky top-[60px] z-30 mt-2 mx-auto flex justify-center animate-slide-down">
+          <button
+            onClick={() => {
+              setCursor(null);
+              setHasMore(true);
+              fetchPosts(null, true);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            className="flex items-center gap-2 bg-[var(--color-accent)] text-white text-sm font-semibold px-5 py-2.5 rounded-full shadow-lg hover:opacity-90 active:scale-95 transition-all"
+          >
+            <span className="animate-spin-slow">🔄</span>
+            Có bài viết mới — Nhấn để tải
+          </button>
+        </div>
+      )}
 
       <div className="mt-4 flex flex-col gap-2">
         {/* Initial skeleton loading */}
@@ -157,3 +198,4 @@ export const NewsfeedPage = () => {
     </div>
   );
 };
+

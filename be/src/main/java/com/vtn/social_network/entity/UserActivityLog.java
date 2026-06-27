@@ -12,7 +12,8 @@ import java.time.LocalDateTime;
  */
 @Entity
 @Table(name = "user_activity_logs")
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor

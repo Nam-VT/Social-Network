@@ -13,6 +13,7 @@ import com.vtn.social_network.search.UserSearchRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
@@ -26,6 +27,20 @@ public class SearchIndexingService {
     private final UserRepository userRepository;
     private final PostRepository postRepository;
     private final ObjectMapper objectMapper;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
+
+    public void sendSearchIndexEvent(String event, Long id) {
+        try {
+            java.util.Map<String, Object> message = new java.util.HashMap<>();
+            message.put("event", event);
+            message.put("id", id);
+            String jsonMessage = objectMapper.writeValueAsString(message);
+            kafkaTemplate.send("search-indexing", jsonMessage);
+            log.info("Đã gửi sự kiện Kafka ({}): {}", event, id);
+        } catch (Exception e) {
+            log.error("Lỗi khi gửi sự kiện search-indexing: {}", e.getMessage(), e);
+        }
+    }
 
     /**
      * Kafka Consumer lắng nghe topic "search-indexing".
