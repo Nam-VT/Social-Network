@@ -27,7 +27,7 @@ public class SearchIndexingService {
     private final UserRepository userRepository;
     private final PostRepository postRepository;
     private final ObjectMapper objectMapper;
-    private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final KafkaTemplate<Object, Object> kafkaTemplate;
 
     public void sendSearchIndexEvent(String event, Long id) {
         try {
