@@ -450,7 +450,10 @@ public class ChatService {
                 messageReactionRepository.save(reaction);
 
                 log.info("User {} react {} tin nhắn {}", username, reactionType, messageId);
-                return toChatMessageResponse(message);
+                
+                ChatMessageResponse response = toChatMessageResponse(message);
+                messagingTemplate.convertAndSend("/topic/chat/" + message.getChatRoom().getId(), response);
+                return response;
         }
 
         /**
@@ -464,7 +467,12 @@ public class ChatService {
                                 .orElseThrow(() -> new RuntimeException("Không tìm thấy tin nhắn"));
 
                 messageReactionRepository.deleteByMessageAndUser(message, user);
+                messageReactionRepository.flush();
+                
                 log.info("User {} đã gỡ reaction khỏi tin nhắn {}", username, messageId);
+                
+                ChatMessageResponse response = toChatMessageResponse(message);
+                messagingTemplate.convertAndSend("/topic/chat/" + message.getChatRoom().getId(), response);
         }
 
         // ==================== MEDIA GALLERY ====================

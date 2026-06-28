@@ -118,16 +118,22 @@ export const FloatingChatWindow = ({ roomId }: { roomId: number }) => {
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const handleNewMessage = useCallback((msg: ChatMessage) => {
+    const exists = messages.some((m) => m.id === msg.id);
     setMessages((prev) => {
-      if (prev.find((m) => m.id === msg.id)) return prev;
+      if (exists) {
+        return prev.map((m) => (m.id === msg.id ? msg : m));
+      }
       return [...prev, msg];
     });
-    if (currentUser && msg.senderUsername !== currentUser.username) {
-      chatApi.markAsRead(roomId, msg.id).catch(console.error);
+    
+    if (!exists) {
+      if (currentUser && msg.senderUsername !== currentUser.username) {
+        chatApi.markAsRead(roomId, msg.id).catch(console.error);
+      }
+      queryClient.invalidateQueries({ queryKey: ['chat-inbox'] });
+      queryClient.invalidateQueries({ queryKey: ['chat-unread-count'] });
     }
-    queryClient.invalidateQueries({ queryKey: ['chat-inbox'] });
-    queryClient.invalidateQueries({ queryKey: ['chat-unread-count'] });
-  }, [queryClient, currentUser, roomId]);
+  }, [messages, queryClient, currentUser, roomId]);
 
   const handleMessageUpdated = useCallback((updated: ChatMessage) => {
     setMessages((prev) => prev.map((m) => (m.id === updated.id ? updated : m)));

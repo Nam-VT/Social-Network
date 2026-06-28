@@ -135,18 +135,24 @@ export const ChatWindow = ({ room, onToggleInfo, onMediaClick }: ChatWindowProps
 
   // Callback khi nhận tin mới qua WebSocket
   const handleNewMessage = useCallback((msg: ChatMessage) => {
+    const exists = messages.some((m) => m.id === msg.id);
     setMessages((prev) => {
-      if (prev.find((m) => m.id === msg.id)) return prev;
+      if (exists) {
+        return prev.map((m) => (m.id === msg.id ? msg : m));
+      }
       return [...prev, msg];
     });
-    // Đánh dấu đã đọc nếu đang mở cửa sổ này
-    if (currentUser && msg.senderId !== currentUser.id) {
-      chatApi.markAsRead(room.id, msg.id).catch(console.error);
+    
+    if (!exists) {
+      // Đánh dấu đã đọc nếu đang mở cửa sổ này
+      if (currentUser && msg.senderId !== currentUser.id) {
+        chatApi.markAsRead(room.id, msg.id).catch(console.error);
+      }
+      // Cập nhật inbox preview
+      queryClient.invalidateQueries({ queryKey: ['chat-inbox'] });
+      queryClient.invalidateQueries({ queryKey: ['chat-unread-count'] });
     }
-    // Cập nhật inbox preview
-    queryClient.invalidateQueries({ queryKey: ['chat-inbox'] });
-    queryClient.invalidateQueries({ queryKey: ['chat-unread-count'] });
-  }, [queryClient, currentUser, room.id]);
+  }, [messages, queryClient, currentUser, room.id]);
 
   // Callback khi tin bị sửa/thu hồi
   const handleMessageUpdated = useCallback((updated: ChatMessage) => {

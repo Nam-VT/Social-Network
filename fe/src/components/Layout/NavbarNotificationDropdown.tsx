@@ -85,10 +85,17 @@ const NotificationItem = ({
   const timeAgo = formatDistanceToNow(new Date(notif.createdAt), { addSuffix: true, locale: vi });
 
   return (
-    <button
+    <div
+      role="button"
+      tabIndex={0}
       onClick={() => onRead(notif.id, resolveNavUrl(notif))}
-      className={`w-full flex items-start gap-3 px-4 py-3 hover:bg-[var(--color-bg-hover)] transition-colors text-left relative ${
-        !notif.isRead ? 'bg-[var(--color-accent)]/5' : ''
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          onRead(notif.id, resolveNavUrl(notif));
+        }
+      }}
+      className={`w-full flex items-start gap-3 px-4 py-3 hover:bg-[var(--color-bg-hover)] transition-colors text-left relative cursor-pointer ${
+        !notif.isRead ? 'bg-[var(--color-accent-light)]' : ''
       }`}
     >
       {/* Actor avatar + type icon badge */}
@@ -119,9 +126,16 @@ const NotificationItem = ({
 
       {/* Unread dot */}
       {!notif.isRead && (
-        <span className="flex-none w-2.5 h-2.5 bg-[var(--color-accent)] rounded-full mt-1 shrink-0" />
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onRead(notif.id, '');
+          }}
+          className="flex-none w-2.5 h-2.5 bg-[var(--color-accent)] rounded-full mt-2 shrink-0 hover:scale-125 transition-transform cursor-pointer z-10"
+          title="Đánh dấu đã đọc"
+        />
       )}
-    </button>
+    </div>
   );
 };
 
@@ -162,7 +176,37 @@ export const NavbarNotificationDropdown = () => {
   // Mutation: mark single as read
   const markReadMutation = useMutation({
     mutationFn: notificationApi.markAsRead,
-    onSuccess: () => {
+    onMutate: async (id: number) => {
+      await queryClient.cancelQueries({ queryKey: ['notifications'] });
+      await queryClient.cancelQueries({ queryKey: ['notif-unread-count'] });
+
+      const previousNotifications = queryClient.getQueryData(['notifications']);
+      const previousUnreadCount = queryClient.getQueryData(['notif-unread-count']);
+
+      queryClient.setQueryData(['notifications'], (old: any) => {
+        if (!old) return old;
+        return {
+          ...old,
+          pages: old.pages.map((page: any) => ({
+            ...page,
+            content: page.content.map((n: Notification) =>
+              n.id === id ? { ...n, isRead: true } : n
+            ),
+          })),
+        };
+      });
+
+      queryClient.setQueryData(['notif-unread-count'], (old: number = 0) => Math.max(0, old - 1));
+
+      return { previousNotifications, previousUnreadCount };
+    },
+    onError: (err, id, context: any) => {
+      if (context) {
+        queryClient.setQueryData(['notifications'], context.previousNotifications);
+        queryClient.setQueryData(['notif-unread-count'], context.previousUnreadCount);
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
       queryClient.invalidateQueries({ queryKey: ['notif-unread-count'] });
     },
@@ -171,7 +215,35 @@ export const NavbarNotificationDropdown = () => {
   // Mutation: mark all as read
   const markAllMutation = useMutation({
     mutationFn: notificationApi.markAllAsRead,
-    onSuccess: () => {
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: ['notifications'] });
+      await queryClient.cancelQueries({ queryKey: ['notif-unread-count'] });
+
+      const previousNotifications = queryClient.getQueryData(['notifications']);
+      const previousUnreadCount = queryClient.getQueryData(['notif-unread-count']);
+
+      queryClient.setQueryData(['notifications'], (old: any) => {
+        if (!old) return old;
+        return {
+          ...old,
+          pages: old.pages.map((page: any) => ({
+            ...page,
+            content: page.content.map((n: Notification) => ({ ...n, isRead: true })),
+          })),
+        };
+      });
+
+      queryClient.setQueryData(['notif-unread-count'], 0);
+
+      return { previousNotifications, previousUnreadCount };
+    },
+    onError: (err, variables, context: any) => {
+      if (context) {
+        queryClient.setQueryData(['notifications'], context.previousNotifications);
+        queryClient.setQueryData(['notif-unread-count'], context.previousUnreadCount);
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
       queryClient.invalidateQueries({ queryKey: ['notif-unread-count'] });
     },
@@ -200,8 +272,10 @@ export const NavbarNotificationDropdown = () => {
 
   const handleRead = (id: number, navUrl: string) => {
     markReadMutation.mutate(id);
-    setIsOpen(false);
-    if (navUrl && navUrl !== '/') navigate(navUrl);
+    if (navUrl) {
+      setIsOpen(false);
+      if (navUrl !== '/') navigate(navUrl);
+    }
   };
 
   return (
