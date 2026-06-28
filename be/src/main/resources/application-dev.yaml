@@ -18,9 +18,6 @@ spring:
       max-file-size: 50MB
       max-request-size: 100MB
 
-server:
-  forward-headers-strategy: framework
-
   # Kafka Configuration
   kafka:
     bootstrap-servers: localhost:9092
@@ -73,6 +70,9 @@ server:
           auth: false
           starttls:
             enable: false
+
+server:
+  forward-headers-strategy: framework
 
 # JWT Custom Configuration
 jwt:
