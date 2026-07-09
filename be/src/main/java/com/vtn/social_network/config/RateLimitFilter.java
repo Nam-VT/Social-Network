@@ -44,6 +44,10 @@ public class RateLimitFilter extends OncePerRequestFilter {
     // Cấu hình giới hạn
     private static final int SIGNIN_LIMIT = 10;
     private static final int SIGNUP_LIMIT = 5;
+    private static final int POST_LIMIT = 30;
+    private static final int COMMENT_LIMIT = 60;
+    private static final int FRIEND_REQ_LIMIT = 30;
+    private static final int GLOBAL_LIMIT = 150;
     private static final Duration WINDOW = Duration.ofMinutes(1);
 
     public RateLimitFilter(
@@ -101,7 +105,16 @@ public class RateLimitFilter extends OncePerRequestFilter {
         if ("POST".equalsIgnoreCase(method)) {
             if (path.equals("/api/auth/signin")) return SIGNIN_LIMIT;
             if (path.equals("/api/auth/signup")) return SIGNUP_LIMIT;
+            if (path.equals("/api/posts")) return POST_LIMIT;
+            if (path.equals("/api/comments")) return COMMENT_LIMIT;
+            if (path.matches("^/api/friends/request/[0-9]+$")) return FRIEND_REQ_LIMIT;
         }
+        
+        // Tấm khiên toàn cầu cho tất cả các API còn lại
+        if (path.startsWith("/api/")) {
+            return GLOBAL_LIMIT;
+        }
+        
         return null;
     }
 
