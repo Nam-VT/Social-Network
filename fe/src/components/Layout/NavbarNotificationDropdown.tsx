@@ -93,9 +93,8 @@ const NotificationItem = ({
           onRead(notif.id, resolveNavUrl(notif));
         }
       }}
-      className={`w-full flex items-start gap-3 px-4 py-3 hover:bg-[var(--color-bg-hover)] transition-colors duration-500 text-left relative cursor-pointer ${
-        !notif.isRead ? 'bg-[var(--color-accent-light)]' : 'bg-transparent'
-      }`}
+      className={`w-full flex items-start gap-3 px-4 py-3 hover:bg-[var(--color-bg-hover)] transition-colors duration-500 text-left relative cursor-pointer ${!notif.isRead ? 'bg-[var(--color-accent-light)]' : 'bg-transparent'
+        }`}
     >
       {/* Actor avatar + type icon badge */}
       <div className="relative flex-none">
@@ -116,9 +115,8 @@ const NotificationItem = ({
           <span className="font-semibold">{notif.actorFullName}</span>{' '}
           <span className="text-[var(--color-text-secondary)]">{meta.text}</span>
         </p>
-        <span className={`text-[11px] font-medium mt-0.5 block ${
-          !notif.isRead ? 'text-[var(--color-accent)]' : 'text-[var(--color-text-secondary)]'
-        }`}>
+        <span className={`text-[11px] font-medium mt-0.5 block ${!notif.isRead ? 'text-[var(--color-accent)]' : 'text-[var(--color-text-secondary)]'
+          }`}>
           {timeAgo}
         </span>
       </div>

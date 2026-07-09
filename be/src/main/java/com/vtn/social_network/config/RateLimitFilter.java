@@ -30,9 +30,9 @@ import java.util.function.Supplier;
 /**
  * Rate Limiting Filter sử dụng Bucket4j + Redis.
  * Các quy tắc:
- *  - POST /api/auth/signin  → 10 requests / phút / IP
- *  - POST /api/auth/signup  → 5  requests / phút / IP
- *  - (các endpoint khác không bị giới hạn)
+ * - POST /api/auth/signin → 10 requests / phút / IP
+ * - POST /api/auth/signup → 5 requests / phút / IP
+ * - (các endpoint khác không bị giới hạn)
  */
 @Slf4j
 @Component
@@ -55,19 +55,19 @@ public class RateLimitFilter extends OncePerRequestFilter {
             ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
         RedisClient redisClient = RedisClient.create(redisUrl);
-        StatefulRedisConnection<String, byte[]> connection =
-                redisClient.connect(RedisCodec.of(StringCodec.UTF8, ByteArrayCodec.INSTANCE));
+        StatefulRedisConnection<String, byte[]> connection = redisClient
+                .connect(RedisCodec.of(StringCodec.UTF8, ByteArrayCodec.INSTANCE));
         this.proxyManager = LettuceBasedProxyManager.builderFor(connection)
                 .build();
     }
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
-                                    @NonNull HttpServletResponse response,
-                                    @NonNull FilterChain chain)
+            @NonNull HttpServletResponse response,
+            @NonNull FilterChain chain)
             throws ServletException, IOException {
 
-        String path   = request.getRequestURI();
+        String path = request.getRequestURI();
         String method = request.getMethod();
 
         // Chỉ rate-limit một số endpoint cụ thể
@@ -78,7 +78,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
         }
 
         // Key: endpoint + IP để tránh nhầm lẫn giữa các endpoint
-        String clientIp  = getClientIp(request);
+        String clientIp = getClientIp(request);
         String bucketKey = "rate:" + path.replaceAll("/", "_") + ":" + clientIp;
 
         Supplier<BucketConfiguration> config = () -> BucketConfiguration.builder()
@@ -103,18 +103,23 @@ public class RateLimitFilter extends OncePerRequestFilter {
     /** Trả về giới hạn cho endpoint, null = không áp dụng */
     private Integer resolveLimit(String method, String path) {
         if ("POST".equalsIgnoreCase(method)) {
-            if (path.equals("/api/auth/signin")) return SIGNIN_LIMIT;
-            if (path.equals("/api/auth/signup")) return SIGNUP_LIMIT;
-            if (path.equals("/api/posts")) return POST_LIMIT;
-            if (path.equals("/api/comments")) return COMMENT_LIMIT;
-            if (path.matches("^/api/friends/request/[0-9]+$")) return FRIEND_REQ_LIMIT;
+            if (path.equals("/api/auth/signin"))
+                return SIGNIN_LIMIT;
+            if (path.equals("/api/auth/signup"))
+                return SIGNUP_LIMIT;
+            if (path.equals("/api/posts"))
+                return POST_LIMIT;
+            if (path.equals("/api/comments"))
+                return COMMENT_LIMIT;
+            if (path.matches("^/api/friends/request/[0-9]+$"))
+                return FRIEND_REQ_LIMIT;
         }
-        
+
         // Tấm khiên toàn cầu cho tất cả các API còn lại
         if (path.startsWith("/api/")) {
             return GLOBAL_LIMIT;
         }
-        
+
         return null;
     }
 

@@ -41,11 +41,11 @@ export const Sidebar = () => {
               key={item.path}
               to={item.path}
               end={item.path === '/'}
-              className={({ isActive }) => 
+              className={({ isActive }) =>
                 `sidebar-menu-item ${isActive ? 'active' : ''}`
               }
             >
-            <div className="relative inline-flex">
+              <div className="relative inline-flex">
                 <Icon className="sidebar-icon" />
                 {(item as any).badge > 0 && (
                   <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-0.5 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
@@ -67,9 +67,6 @@ export const Sidebar = () => {
           <a href="#">Điều khoản</a>
           <a href="#">Quảng cáo</a>
           <a href="#">Cookie</a>
-        </div>
-        <div className="mt-2">
-          Antigravity Social © 2026
         </div>
       </div>
     </div>

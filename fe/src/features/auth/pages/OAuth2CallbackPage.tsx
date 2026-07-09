@@ -33,7 +33,7 @@ export const OAuth2CallbackPage = () => {
       })
       .then((res) => {
         const user = res.data.data;
-        setAuth(user, token);
+        setAuth(user, token, refreshToken || '');
         if (user.role === 'ADMIN') {
           navigate('/admin', { replace: true });
         } else {

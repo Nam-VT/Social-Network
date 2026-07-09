@@ -6,7 +6,8 @@ interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
   token: string | null;
-  setAuth: (user: User, token: string) => void;
+  refreshToken: string | null;
+  setAuth: (user: User, token: string, refreshToken: string) => void;
   logout: () => void;
   updateUser: (user: User) => void;
 }
@@ -17,13 +18,16 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       isAuthenticated: false,
       token: null,
-      setAuth: (user, token) => {
+      refreshToken: null,
+      setAuth: (user, token, refreshToken) => {
         localStorage.setItem('token', token);
-        set({ user, token, isAuthenticated: true });
+        localStorage.setItem('refreshToken', refreshToken);
+        set({ user, token, refreshToken, isAuthenticated: true });
       },
       logout: () => {
         localStorage.removeItem('token');
-        set({ user: null, token: null, isAuthenticated: false });
+        localStorage.removeItem('refreshToken');
+        set({ user: null, token: null, refreshToken: null, isAuthenticated: false });
       },
       updateUser: (user) => set({ user }),
     }),
