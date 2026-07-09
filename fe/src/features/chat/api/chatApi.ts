@@ -79,7 +79,7 @@ export const chatApi = {
 
   getUnreadCount: async (): Promise<number> => {
     const res = await axiosClient.get('/chat/unread-count');
-    return res.data.data;
+    return res.data?.data ?? res.data ?? 0;
   },
 
   getRoom: async (roomId: number): Promise<ChatRoom> => {

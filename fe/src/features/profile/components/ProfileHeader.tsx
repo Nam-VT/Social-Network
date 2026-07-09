@@ -115,6 +115,11 @@ export const ProfileHeader = ({ profile, isOwnProfile, onEditClick }: ProfileHea
     mutationFn: () => chatApi.getOrCreateDirectRoom(profile.id),
     onSuccess: (room) => {
       openChat(room.id);
+    },
+    onError: (err: any) => {
+      const msg = err?.response?.data?.message || err?.message || 'Có lỗi xảy ra khi tạo cuộc trò chuyện';
+      toast.error(msg);
+      console.error('Lỗi khi nhắn tin:', err?.response?.data || err);
     }
   });
 

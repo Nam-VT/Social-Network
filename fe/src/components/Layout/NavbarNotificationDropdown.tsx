@@ -2,8 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { Bell, Check, CheckCheck } from 'lucide-react';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { formatDistanceToNow } from 'date-fns';
-import { vi } from 'date-fns/locale';
+import { formatTimeAgo } from '@/utils/formatTimeAgo';
 import { notificationApi, NOTIFICATION_TEXT, type Notification } from '@/api/notificationApi';
 import { useAuthStore } from '@/store/useAuthStore';
 
@@ -82,7 +81,7 @@ const NotificationItem = ({
   onRead: (id: number, deepLink: string) => void;
 }) => {
   const meta = NOTIFICATION_TEXT[notif.type] || { icon: '🔔', text: 'đã tương tác với bạn' };
-  const timeAgo = formatDistanceToNow(new Date(notif.createdAt), { addSuffix: true, locale: vi });
+  const timeAgo = formatTimeAgo(notif.createdAt);
 
   return (
     <div
@@ -94,8 +93,8 @@ const NotificationItem = ({
           onRead(notif.id, resolveNavUrl(notif));
         }
       }}
-      className={`w-full flex items-start gap-3 px-4 py-3 hover:bg-[var(--color-bg-hover)] transition-colors text-left relative cursor-pointer ${
-        !notif.isRead ? 'bg-[var(--color-accent-light)]' : ''
+      className={`w-full flex items-start gap-3 px-4 py-3 hover:bg-[var(--color-bg-hover)] transition-colors duration-500 text-left relative cursor-pointer ${
+        !notif.isRead ? 'bg-[var(--color-accent-light)]' : 'bg-transparent'
       }`}
     >
       {/* Actor avatar + type icon badge */}

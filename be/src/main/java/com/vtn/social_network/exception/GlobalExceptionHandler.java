@@ -62,13 +62,13 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ApiResponse<Object>> handleRuntimeException(RuntimeException ex) {
         String message = ex.getMessage();
-        log.warn("Runtime error: {}", message);
+        log.error("Runtime error: ", ex); // ADD STACK TRACE
 
         HttpStatus status = resolveStatus(message);
         return ResponseEntity.status(status)
                 .body(ApiResponse.<Object>builder()
                         .status(status.value())
-                        .message(message != null ? message : ErrorCode.INTERNAL_ERROR.getMessage())
+                        .message((message != null ? message : ErrorCode.INTERNAL_ERROR.getMessage()) + " (Type: " + ex.getClass().getSimpleName() + ")")
                         .build());
     }
 

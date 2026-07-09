@@ -10,6 +10,7 @@ import { Lightbox } from './Lightbox';
 import { MentionDropdown } from './MentionDropdown';
 import { LazyImage } from '@/components/ui/LazyImage';
 import { usePostCountSocket } from '@/hooks/usePostCountSocket';
+import { formatTimeAgo } from '@/utils/formatTimeAgo';
 import '@/styles/newsfeed/post-item.css';
 import '@/styles/newsfeed/comment.css';
 
@@ -386,12 +387,7 @@ export const PostItem = ({ post, defaultShowComments = false, onDeleted }: PostP
   const totalElements = commentsData?.data?.totalElements || 0;
 
   const formatPostTime = (isoString: string) => {
-    if (!isoString) return '';
-    const date = new Date(isoString);
-    if (isNaN(date.getTime())) return '';
-    return new Intl.DateTimeFormat('vi-VN', {
-      hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric'
-    }).format(date);
+    return formatTimeAgo(isoString);
   };
 
   if (isDeleted) return null;

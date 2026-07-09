@@ -64,7 +64,7 @@ export const Rightbar = () => {
             <div className="flex justify-center py-4">
               <Loader2 size={24} className="animate-spin text-[var(--color-text-secondary)]" />
             </div>
-          ) : trendingHashtags && trendingHashtags.length > 0 ? (
+          ) : Array.isArray(trendingHashtags) && trendingHashtags.length > 0 ? (
             trendingHashtags.map((item: any) => (
               <Link to={`/hashtag/${item.name}`} key={item.id} className="trending-item group">
                 <span className="trending-hashtag group-hover:text-[var(--color-accent)] transition-colors">#{item.name}</span>

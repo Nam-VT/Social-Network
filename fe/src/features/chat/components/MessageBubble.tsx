@@ -1,8 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { MoreHorizontal, Pencil, Trash2, SmilePlus } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { formatDistanceToNow } from 'date-fns';
-import { vi } from 'date-fns/locale';
+import { formatTimeAgo } from '@/utils/formatTimeAgo';
 import { chatApi, type ChatMessage, type ChatMember } from '../api/chatApi';
 import { useAuthStore } from '@/store/useAuthStore';
 import { Link } from 'react-router-dom';
@@ -62,12 +61,12 @@ export const MessageBubble = ({ message, onMessageUpdated, readByUsers, onReply,
 
   // Auto-refresh timestamp mỗi 30 giây
   const [timeAgo, setTimeAgo] = useState(() =>
-    formatDistanceToNow(new Date(message.createdAt), { addSuffix: true, locale: vi })
+    formatTimeAgo(message.createdAt)
   );
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setTimeAgo(formatDistanceToNow(new Date(message.createdAt), { addSuffix: true, locale: vi }));
+      setTimeAgo(formatTimeAgo(message.createdAt));
     }, 30000);
     return () => clearInterval(timer);
   }, [message.createdAt]);

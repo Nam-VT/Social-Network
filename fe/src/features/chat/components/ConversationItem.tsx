@@ -1,6 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { formatDistanceToNow } from 'date-fns';
-import { vi } from 'date-fns/locale';
+import { formatTimeAgo } from '@/utils/formatTimeAgo';
 import type { ChatRoom } from '../api/chatApi';
 import { usePresenceStore } from '@/store/usePresenceStore';
 import { useTimeTick } from '@/hooks/useTimeTick';
@@ -20,7 +19,7 @@ export const ConversationItem = ({ room, isActive, onClick }: ConversationItemPr
   useTimeTick(30_000);
 
   const timeAgo = room.lastMessageAt
-    ? formatDistanceToNow(new Date(room.lastMessageAt), { addSuffix: true, locale: vi })
+    ? formatTimeAgo(room.lastMessageAt)
     : '';
 
   const itemContent = (

@@ -62,7 +62,7 @@ export const profileApi = {
   // === FRIENDSHIP ===
   getPendingRequests: async () => {
     const res = await axiosClient.get('/friends/requests/pending');
-    return res.data.data;
+    return res.data?.data ?? res.data ?? [];
   },
   getSentRequests: async () => {
     const res = await axiosClient.get('/friends/requests/sent');

@@ -1,11 +1,7 @@
 import { useEffect } from 'react';
 
-const BASE_TITLE = 'Antigravity Social';
+const BASE_TITLE = 'Connectify';
 
-/**
- * Sets the document title for the current page.
- * @param title - Page-specific title. Pass empty string to show just the base title.
- */
 export const usePageTitle = (title?: string) => {
   useEffect(() => {
     if (title) {

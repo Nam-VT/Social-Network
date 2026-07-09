@@ -10,6 +10,7 @@ import { PostItem, PostSkeleton } from '@/features/newsfeed/components/PostItem'
 import { Loader2, User, Calendar, Heart } from 'lucide-react';
 import '@/styles/profile/profile.css';
 import { useEffect, useRef, useState } from 'react';
+import { useAuthStore } from '@/store/useAuthStore';
 
 const PAGE_SIZE = 10;
 
@@ -44,8 +45,10 @@ export const ProfilePage = ({ defaultTab = 'posts' }: { defaultTab?: TabKey } = 
   const isProfileLoading = isDirectOwnProfile ? myProfileQuery.isLoading : otherProfileQuery.isLoading;
   const isProfileError = isDirectOwnProfile ? myProfileQuery.isError : otherProfileQuery.isError;
 
+  const user = useAuthStore((state) => state.user);
+
   // Xác định isOwnProfile
-  const isOwnProfile = isDirectOwnProfile || (!!profile && !!myProfileQuery.data && profile.username === myProfileQuery.data.username);
+  const isOwnProfile = isDirectOwnProfile || (!!profile && !!user && profile.username === user.username);
 
   // resolvedUsername: lấy trực tiếp từ params hoặc my profile query — KHÔNG phụ thuộc vào profile merge
   const resolvedUsername = usernameParam || myProfileQuery.data?.username;

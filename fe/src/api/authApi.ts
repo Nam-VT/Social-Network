@@ -14,6 +14,6 @@ export const authApi = {
 
   getCurrentUser: async (): Promise<any> => {
     const res = await axiosClient.get('/users/me');
-    return res.data.data;
+    return res.data?.data ?? res.data;
   }
 };
