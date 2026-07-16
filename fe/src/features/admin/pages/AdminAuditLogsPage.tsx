@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { adminApi } from '../api/adminApi';
 import { Clock, ShieldCheck } from 'lucide-react';
+import { parseUTCDate } from '@/utils/parseUTCDate';
 
 export const AdminAuditLogsPage: React.FC = () => {
   const [page, setPage] = useState(0);
@@ -39,7 +40,7 @@ export const AdminAuditLogsPage: React.FC = () => {
                   </div>
                   <p className="text-gray-600 dark:text-gray-300 text-sm">{log.details}</p>
                   <p className="text-xs text-gray-400 mt-2">
-                    {new Date(log.createdAt).toLocaleString('vi-VN')}
+                    {parseUTCDate(log.createdAt).toLocaleString('vi-VN')}
                   </p>
                 </div>
               </li>

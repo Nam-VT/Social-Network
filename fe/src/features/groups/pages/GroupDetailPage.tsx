@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { parseUTCDate } from '@/utils/parseUTCDate';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { groupApi } from '@/features/newsfeed/api/groupApi';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -588,7 +589,7 @@ export const GroupDetailPage = () => {
               <div>
                 <p className="font-semibold">Ngày thành lập</p>
                 <p className="text-xs text-[var(--color-text-secondary)]">
-                  {group.createdAt ? new Date(group.createdAt).toLocaleDateString('vi-VN') : 'Đang cập nhật'}
+                  {group.createdAt ? parseUTCDate(group.createdAt).toLocaleDateString('vi-VN') : 'Đang cập nhật'}
                 </p>
               </div>
             </div>

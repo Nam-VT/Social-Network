@@ -1,3 +1,5 @@
+import { parseUTCDate } from './parseUTCDate';
+
 /**
  * Format thời gian "last seen" chính xác đến phút.
  * - Dưới 1 phút → "Vừa truy cập"
@@ -8,7 +10,7 @@
  */
 export const formatLastSeen = (dateStr: string): string => {
   try {
-    const date = new Date(dateStr);
+    const date = parseUTCDate(dateStr);
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffMin = Math.floor(diffMs / 60_000);
@@ -28,3 +30,4 @@ export const formatLastSeen = (dateStr: string): string => {
     return 'Ngoại tuyến';
   }
 };
+

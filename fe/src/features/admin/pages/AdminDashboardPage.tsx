@@ -4,6 +4,7 @@ import { Users, FileText, Component, AlertCircle, Clock, ArrowRight } from 'luci
 import { adminApi } from '../api/adminApi';
 import { NavLink } from 'react-router-dom';
 import { usePageTitle } from '@/hooks/usePageTitle';
+import { parseUTCDate } from '@/utils/parseUTCDate';
 
 // Hook count-up animation
 function useCountUp(target: number, duration = 800) {
@@ -125,7 +126,7 @@ export const AdminDashboardPage: React.FC = () => {
                     <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-600">{log.action}</span>
                   </div>
                   <p className="text-gray-500 dark:text-gray-400 text-sm mt-0.5 truncate">{log.details}</p>
-                  <p className="text-xs text-gray-400 mt-1">{new Date(log.createdAt).toLocaleString('vi-VN')}</p>
+                  <p className="text-xs text-gray-400 mt-1">{parseUTCDate(log.createdAt).toLocaleString('vi-VN')}</p>
                 </div>
               </li>
             ))}

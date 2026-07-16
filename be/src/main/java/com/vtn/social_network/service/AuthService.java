@@ -114,9 +114,7 @@ public class AuthService {
         return buildAuthResponse(user);
     }
 
-    public AuthResponse refreshToken(RefreshTokenRequest request) {
-        String refreshToken = request.getRefreshToken();
-
+    public AuthResponse refreshToken(String refreshToken) {
         if (!jwtUtils.isValidToken(refreshToken)) {
             throw new RuntimeException(ErrorCode.INVALID_TOKEN.getMessage());
         }

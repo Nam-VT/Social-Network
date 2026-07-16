@@ -15,7 +15,6 @@ export const OAuth2CallbackPage = () => {
 
   useEffect(() => {
     const token = searchParams.get('token');
-    const refreshToken = searchParams.get('refreshToken');
 
     if (!token) {
       navigate('/login', { replace: true });
@@ -27,13 +26,14 @@ export const OAuth2CallbackPage = () => {
 
     // Gọi API lấy thông tin user từ token. Phải truyền header tường minh vì lúc này 
     // Zustand store chưa có token (interceptor sẽ không tự gắn được).
+    // Refresh Token đã được Backend set vào HttpOnly Cookie rồi, không cần xử lý ở đây.
     axiosClient
       .get('/users/me', {
         headers: { Authorization: `Bearer ${token}` }
       })
       .then((res) => {
         const user = res.data.data;
-        setAuth(user, token, refreshToken || '');
+        setAuth(user, token);
         if (user.role === 'ADMIN') {
           navigate('/admin', { replace: true });
         } else {

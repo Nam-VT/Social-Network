@@ -16,7 +16,7 @@ export const LoginPage = () => {
     mutationFn: authApi.login,
     onSuccess: (data) => {
       // Lưu user và token vào Zustand + LocalStorage
-      setAuth(data.user, data.token, data.refreshToken);
+      setAuth(data.user, data.token);
       if (data.user.role === 'ADMIN') {
         navigate('/admin');
       } else {

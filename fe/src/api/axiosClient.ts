@@ -6,6 +6,7 @@ const axiosClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true, // Luôn gửi Cookie kèm theo mọi request
 });
 
 // Request Interceptor: Gắn Token vào Header
@@ -65,28 +66,18 @@ axiosClient.interceptors.response.use(
       originalRequest._retry = true;
       isRefreshing = true;
 
-      const refreshToken = useAuthStore.getState().refreshToken;
-
-      // Không có refresh token -> buộc logout
-      if (!refreshToken) {
-        useAuthStore.getState().logout();
-        if (window.location.pathname !== '/login') {
-          window.location.href = '/login';
-        }
-        return Promise.reject(error);
-      }
-
       try {
-        // Dùng axios thô (không qua interceptor) để gọi API refresh
+        // Gọi API refresh-token. Cookie refreshToken sẽ được trình duyệt tự động đính kèm
+        // nhờ withCredentials: true. Không cần gửi trong body nữa.
         const baseURL = import.meta.env.VITE_API_URL || '/api';
-        const rs = await axios.post(`${baseURL}/auth/refresh-token`, {
-          refreshToken: refreshToken,
+        const rs = await axios.post(`${baseURL}/auth/refresh-token`, {}, {
+          withCredentials: true, // Bắt buộc để trình duyệt gửi Cookie
         });
 
-        const { token: newToken, refreshToken: newRefreshToken, user } = rs.data.data;
+        const { token: newToken, user } = rs.data.data;
         
-        // Cập nhật token mới vào store
-        useAuthStore.getState().setAuth(user, newToken, newRefreshToken);
+        // Cập nhật token mới vào store (refreshToken đã nằm trong Cookie rồi)
+        useAuthStore.getState().setAuth(user, newToken);
 
         // Chạy lại tất cả các request đang xếp hàng
         processQueue(null, newToken);

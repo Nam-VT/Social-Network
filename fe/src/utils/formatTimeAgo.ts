@@ -1,6 +1,8 @@
+import { parseUTCDate } from './parseUTCDate';
+
 export const formatTimeAgo = (dateStr: string | Date): string => {
   try {
-    const date = new Date(dateStr);
+    const date = parseUTCDate(dateStr);
     if (isNaN(date.getTime())) return '';
     
     const now = new Date();
@@ -30,3 +32,4 @@ export const formatTimeAgo = (dateStr: string | Date): string => {
     return '';
   }
 };
+

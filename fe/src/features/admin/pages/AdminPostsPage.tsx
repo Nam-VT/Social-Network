@@ -5,6 +5,7 @@ import { Trash2, Search, ChevronLeft, ChevronRight, ExternalLink, FileText } fro
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { toast } from '@/components/ui/Toast';
 import { Link } from 'react-router-dom';
+import { parseUTCDate } from '@/utils/parseUTCDate';
 
 export const AdminPostsPage: React.FC = () => {
   const [page, setPage] = useState(0);
@@ -110,7 +111,7 @@ export const AdminPostsPage: React.FC = () => {
                     </span>
                   </td>
                   <td className="px-5 py-4 text-gray-500 whitespace-nowrap">
-                    {new Date(p.createdAt).toLocaleDateString('vi-VN')}
+                    {parseUTCDate(p.createdAt).toLocaleDateString('vi-VN')}
                   </td>
                   <td className="px-5 py-4 text-right">
                     <div className="flex items-center justify-end gap-1">

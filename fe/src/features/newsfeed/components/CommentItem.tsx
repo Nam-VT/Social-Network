@@ -5,6 +5,7 @@ import { postApi } from '../api/postApi';
 import { useAuthStore } from '@/store/useAuthStore';
 import { Link } from 'react-router-dom';
 import { MentionDropdown } from './MentionDropdown';
+import { parseUTCDate } from '@/utils/parseUTCDate';
 
 const renderContentWithMentions = (content: string, mentionedUsers?: Record<string, string>) => {
   if (!content) return null;
@@ -329,7 +330,7 @@ export const CommentItem = ({ comment, postId, isReply = false, rootCommentId, f
                       className="comment-action-link hover:text-[var(--color-accent)]"
                       onClick={() => {
                         if (comment.createdAt) {
-                          const diff = (Date.now() - new Date(comment.createdAt).getTime()) / 60000;
+                          const diff = (Date.now() - parseUTCDate(comment.createdAt).getTime()) / 60000;
                           if (diff > 15) { alert('Bạn chỉ có thể sửa bình luận trong vòng 15 phút sau khi đăng.'); return; }
                         }
                         setEditingId(comment.id);

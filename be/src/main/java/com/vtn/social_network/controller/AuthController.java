@@ -7,9 +7,12 @@ import com.vtn.social_network.enums.ErrorCode;
 import com.vtn.social_network.repository.UserRepository;
 import com.vtn.social_network.service.AuthService;
 import com.vtn.social_network.service.UserActivityLogService;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -22,6 +25,9 @@ public class AuthController {
         private final AuthService authService;
         private final UserActivityLogService activityLogService;
         private final UserRepository userRepository;
+
+        @Value("${jwt.refresh-expiration}")
+        private long refreshExpiration;
 
         @PostMapping("/signup")
         public ResponseEntity<ApiResponse<AuthResponse>> signup(@Valid @RequestBody RegisterRequest request) {
@@ -36,7 +42,8 @@ public class AuthController {
         @PostMapping("/signin")
         public ResponseEntity<ApiResponse<AuthResponse>> signin(
                         @Valid @RequestBody LoginRequest request,
-                        HttpServletRequest httpRequest) {
+                        HttpServletRequest httpRequest,
+                        HttpServletResponse httpResponse) {
                 AuthResponse data = authService.login(request);
 
                 // Ghi log đăng nhập thành công
@@ -46,6 +53,10 @@ public class AuthController {
                                                 httpRequest.getHeader("User-Agent"),
                                                 "Đăng nhập thành công"));
 
+                // Đặt Refresh Token vào HttpOnly Cookie thay vì trả trong JSON
+                addRefreshTokenCookie(httpResponse, data.getRefreshToken());
+                data.setRefreshToken(null); // Không trả refreshToken trong body nữa
+
                 return ResponseEntity.ok(ApiResponse.<AuthResponse>builder()
                                 .status(ErrorCode.SUCCESS.getStatus())
                                 .message(ErrorCode.SUCCESS.getMessage())
@@ -54,12 +65,39 @@ public class AuthController {
         }
 
         @PostMapping("/refresh-token")
-        public ResponseEntity<ApiResponse<AuthResponse>> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
-                AuthResponse data = authService.refreshToken(request);
+        public ResponseEntity<ApiResponse<AuthResponse>> refreshToken(
+                        @CookieValue(name = "refreshToken", required = false) String refreshToken,
+                        HttpServletResponse httpResponse) {
+                if (refreshToken == null || refreshToken.isBlank()) {
+                        throw new RuntimeException(ErrorCode.INVALID_TOKEN.getMessage());
+                }
+
+                AuthResponse data = authService.refreshToken(refreshToken);
+
+                // Cấp Cookie mới chứa Refresh Token mới
+                addRefreshTokenCookie(httpResponse, data.getRefreshToken());
+                data.setRefreshToken(null); // Không trả refreshToken trong body
+
                 return ResponseEntity.ok(ApiResponse.<AuthResponse>builder()
                                 .status(ErrorCode.SUCCESS.getStatus())
                                 .message(ErrorCode.SUCCESS.getMessage())
                                 .data(data)
+                                .build());
+        }
+
+        @PostMapping("/logout")
+        public ResponseEntity<ApiResponse<Object>> logout(HttpServletResponse httpResponse) {
+                // Xóa Cookie refreshToken bằng cách set maxAge = 0
+                Cookie cookie = new Cookie("refreshToken", "");
+                cookie.setHttpOnly(true);
+                cookie.setSecure(true);
+                cookie.setPath("/api/auth");
+                cookie.setMaxAge(0);
+                httpResponse.addCookie(cookie);
+
+                return ResponseEntity.ok(ApiResponse.<Object>builder()
+                                .status(ErrorCode.SUCCESS.getStatus())
+                                .message("Đăng xuất thành công")
                                 .build());
         }
 
@@ -121,6 +159,21 @@ public class AuthController {
         }
 
         // ===== Helper =====
+
+        /**
+         * Tạo HttpOnly Cookie chứa Refresh Token.
+         * - HttpOnly: Javascript không thể đọc được (chống XSS).
+         * - Secure: Chỉ gửi qua HTTPS (chống nghe lén).
+         * - Path=/api/auth: Cookie chỉ đính kèm khi gọi API auth (giảm diện tích tấn công).
+         */
+        private void addRefreshTokenCookie(HttpServletResponse response, String refreshToken) {
+                Cookie cookie = new Cookie("refreshToken", refreshToken);
+                cookie.setHttpOnly(true);
+                cookie.setSecure(true);
+                cookie.setPath("/api/auth");
+                cookie.setMaxAge((int) (refreshExpiration / 1000)); // Đổi từ ms sang giây
+                response.addCookie(cookie);
+        }
 
         private String getClientIp(HttpServletRequest request) {
                 String forwarded = request.getHeader("X-Forwarded-For");
